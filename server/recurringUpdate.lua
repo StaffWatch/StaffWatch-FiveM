@@ -32,6 +32,23 @@ Citizen.CreateThread(function()
         print("Failure reason: " .. errorData)
     end
 
+    -- Get result from API call
+    DebugLog(resultData)
+    local result = json.decode(resultData)
+    
+    -- Handle null result
+    if (result == nil) then
+      print("Warning: Response was null")
+      return
+    end
+
+    -- Execute commands from command queue
+    local commands = result.commands
+    for i in pairs(commands) do
+      DebugLog("Execute command: ".. commands[i])
+      ExecuteCommand(commands[i])
+    end
+
     -- Wait before next update
     Citizen.Wait(UPDATE_INTERVAL)
   end

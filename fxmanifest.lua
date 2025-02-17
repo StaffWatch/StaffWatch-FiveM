@@ -8,5 +8,6 @@ server_scripts {
     "config.lua",
     "/server/util.lua",
     "/server/playerJoin.lua",
-    "/server/recurringUpdate.lua"
+    "/server/recurringUpdate.lua",
+    "/server/commands.lua"
 }
