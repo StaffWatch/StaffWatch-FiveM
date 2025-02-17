@@ -10,5 +10,6 @@ server_scripts {
     "/src/server/util.lua",
     "/src/server/playerJoin.lua",
     "/src/server/recurringUpdate.lua",
-    "/src/server/commands.lua"
+    "/src/server/commands.lua",
+    "/src/server/link.lua"
 }

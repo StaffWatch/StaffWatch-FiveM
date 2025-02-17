@@ -34,6 +34,19 @@ GetPlayerIdByLicense = function (license)
     return nil
 end
 
+GetPlayerPrimaryIdentifier = function (playerId)
+    local playerLicense = GetPlayerIdentifierByType(playerId, "license")
+    return string.sub(playerLicense, 9)
+end
+
+SendChatMessage = function (playerId, message)
+    TriggerClientEvent('chat:addMessage', playerId, {
+        color = {0, 0, 255},
+        multiline = false,
+        args = {"StaffWatch", message}
+    })
+end
+
 DebugLog = function(msg)
     if (Config.DEBUG) then
         print(msg)
