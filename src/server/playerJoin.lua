@@ -40,6 +40,8 @@ AddEventHandler("playerConnecting", function(name, setReason, deferrals)
     local response = json.decode(resultData)
     if (response.allowJoin) then
         AllowJoin(deferrals)
+    elseif (response.banInfo) then
+        HandleBan(deferrals, response.banInfo)
     else
         BlockJoin(deferrals)
     end
@@ -51,6 +53,11 @@ function AllowJoin(def)
     def.update("Account verified! Joining server! ✅")
     Citizen.Wait(500)
     def.done()
+end
+
+-- Handle banned player
+function HandleBan(def, banInfo)
+    def.done("You are banned from the server\nReason: " .. banInfo.reason .. "\nExpiration: " .. banInfo.expiration)
 end
 
 -- Prevents player join
