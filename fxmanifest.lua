@@ -13,3 +13,6 @@ server_scripts {
     "/src/server/commands.lua",
     "/src/server/link.lua"
 }
+client_scripts {
+    "/src/client/announcement.lua"
+}

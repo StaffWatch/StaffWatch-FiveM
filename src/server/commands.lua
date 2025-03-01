@@ -21,6 +21,8 @@ end, false)
 -- Actual command handler
 function handleCommand(command, source, args, rawCommand)
 
+    DebugLog("Recieved raw command: " .. rawCommand)
+
     -- Disallow players from using command
     if (source ~= 0) then
         print("This command can only be executed by the server!")
@@ -43,6 +45,7 @@ function handleCommand(command, source, args, rawCommand)
         print("No player found with license: " .. license)
         return
     end
+    DebugLog("Player ID: "..playerId)
 
     -- Get reason
     local reason = string.sub(rawCommand, #command + #license + 3)
@@ -51,6 +54,16 @@ function handleCommand(command, source, args, rawCommand)
     -- Kick and Ban
     if (command == "sw_kick" or command == "sw_ban") then
         DropPlayer(playerId, "StaffWatch: " .. reason)
+    end
+
+    -- Commend
+    if (command == "sw_commend") then
+        TriggerClientEvent("sw:createAnnouncement", playerId, "~g~StaffWatch Commendation", "You've been commended for: " .. reason, 5000)
+    end
+
+    -- Warn
+    if (command == "sw_warn") then
+        TriggerClientEvent("sw:createAnnouncement", playerId, "~y~StaffWatch Warning", "You've been warned for: " .. reason, 8000)
     end
 
 end
