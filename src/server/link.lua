@@ -29,6 +29,7 @@ RegisterCommand("link", function(source, _, _)
     if (status ~= 200) then
         print("Warning: Link failed with status code: " .. status)
         print("Failure reason: " .. errorData)
+        return
     end
 
     -- Get result from API call

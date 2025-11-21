@@ -1,4 +1,4 @@
-RegisterCommand("staffrequest", function(source, args, rawCommand)
+RegisterCommand("report", function(source, args, rawCommand)
 
     -- Disallow console execution
     if (source == 0) then
@@ -7,9 +7,9 @@ RegisterCommand("staffrequest", function(source, args, rawCommand)
     end
 
     -- Get reason
-    local reason = string.match(rawCommand, "^%w+%s+(.*)")
-    if (reason == nil) then
-        print("Invalid reason specified!")
+    local reportedPlayerId, reason = string.match(rawCommand, "^%w+%s+(%d+)%s+(.*)")
+    if (reportedPlayerId == nil or reason == nil) then
+        print("Invalid usage! Use /report [playerId] [reason]")
         return
     end
 
@@ -20,19 +20,27 @@ RegisterCommand("staffrequest", function(source, args, rawCommand)
         return
     end
 
+    -- Get reported player license
+    local reportedId = GetPlayerPrimaryIdentifier(reportedPlayerId)
+    if (reportedId == nil) then
+        print("No primary ID found for reported player!")
+        return
+    end
+
     -- Send request to server
     local status, resultData, resultHeaders, errorData = PerformHttpRequestAwait(
         Config.API_URL .. "/api/report", "POST", json.encode({
-            type = "HELP",
+            type = "REPORT",
             secret = Config.SECRET,
             reporterPrimaryIdentifier = primaryId,
+            reportedPrimaryIdentifier = reportedId,
             reason = reason
         }), {["Content-Type"] = 'application/json'}
     )
 
     -- Handle failure
     if (status ~= 200) then
-        print("Warning: Request failed with status code: " .. status)
+        print("Warning: Report failed with status code: " .. status)
         print("Failure reason: " .. errorData)
         return
     end
