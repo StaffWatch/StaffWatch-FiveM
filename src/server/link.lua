@@ -33,9 +33,8 @@ RegisterCommand("link", function(source, _, _)
 
     -- Get result from API call
     DebugLog(resultData)
-    local result = json.decode(resultData)
     
     -- Send message to player
-    SendChatMessage(source, result["message"])
+    SendChatMessage(source, resultData)
 
 end, false)
