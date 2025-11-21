@@ -15,7 +15,7 @@ AddEventHandler("playerConnecting", function(name, setReason, deferrals)
 
     -- Send request to server
     local status, resultData, resultHeaders, errorData = PerformHttpRequestAwait(
-        Config.API_URL .. "/api/playerJoin", "POST", jsonData, {["Content-Type"] = 'application/json'}
+        Config.API_URL .. "/api/player-join", "POST", jsonData, {["Content-Type"] = 'application/json'}
     )
 
     DebugLog(status)

@@ -11,7 +11,8 @@ server_scripts {
     "/src/server/playerJoin.lua",
     "/src/server/recurringUpdate.lua",
     "/src/server/commands.lua",
-    "/src/server/link.lua"
+    "/src/server/link.lua",
+    "/src/server/staffrequests.lua"
 }
 client_scripts {
     "/src/client/announcement.lua"

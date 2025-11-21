@@ -27,7 +27,7 @@ Citizen.CreateThread(function()
 
       -- Send request to server
       local status, resultData, resultHeaders, errorData = PerformHttpRequestAwait(
-          Config.API_URL .. "/api/update", "POST", jsonData, {["Content-Type"] = 'application/json'}
+          Config.API_URL .. "/api/check-in", "POST", jsonData, {["Content-Type"] = 'application/json'}
       )
       
       -- Handle failure
