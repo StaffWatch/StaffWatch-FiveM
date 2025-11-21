@@ -34,6 +34,7 @@ Citizen.CreateThread(function()
       if (status ~= 200) then
           print("Warning: Scheduled update failed with status code: " .. status)
           print("Failure reason: " .. errorData)
+          return
       end
 
       -- Get result from API call

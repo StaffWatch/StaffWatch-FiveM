@@ -5,7 +5,7 @@ Config = {
     API_URL = "http://localhost",
 
     -- Found on the manage servers page
-    SECRET = "GAcjvGQmmqCdRYjLgdGo",
+    SECRET = "MdDayzFrrXmOJyqWWegA",
 
     -- Allow join when connection fails?
     BYPASS_ON_FAILURE = true,
@@ -13,12 +13,17 @@ Config = {
     -- Configure templated actions
     TEMPLATED_ACTIONS = {
         {
-            playerLevel = true,
+            scope = "SERVER",
+            name = "Set Time",
+            command = "set time day"
+        },
+        {
+            scope = "PLAYER",
             name = "Freeze",
             command = "sw_freeze"
         },
         {
-            playerLevel = true,
+            scope = "PLAYER",
             name = "Unfreeze",
             command = "sw_unfreeze"
         },
