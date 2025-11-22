@@ -5,7 +5,7 @@ Config = {
     API_URL = "http://localhost",
 
     -- Found on the manage servers page
-    SECRET = "MdDayzFrrXmOJyqWWegA",
+    SECRET = "AwZdDkGhKWixUpkBAeZQ",
 
     -- Allow join when connection fails?
     BYPASS_ON_FAILURE = true,

@@ -14,6 +14,7 @@ server_scripts {
     "/src/server/link.lua",
     "/src/server/staffrequests.lua",
     "/src/server/reportplayer.lua",
+    "/src/server/playerDropped.lua"
 }
 client_scripts {
     "/src/client/announcement.lua"

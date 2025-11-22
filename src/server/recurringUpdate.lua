@@ -1,4 +1,4 @@
-local UPDATE_INTERVAL = 5000
+local UPDATE_INTERVAL = 15000
 
 Citizen.CreateThread(function()
   while true do
