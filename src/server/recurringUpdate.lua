@@ -2,8 +2,16 @@ local UPDATE_INTERVAL = 5000
 
 Citizen.CreateThread(function()
   while true do
+    pcall(DoRecurringUpdate)
+
+    -- Wait before next update
+    Citizen.Wait(UPDATE_INTERVAL)
     
-    -- Initialize players and dto
+  end
+end)
+
+function DoRecurringUpdate()
+  -- Initialize players and dto
     local players = GetPlayers()
     local playersDto = {}
 
@@ -55,9 +63,4 @@ Citizen.CreateThread(function()
       end
 
     end
-
-    -- Wait before next update
-    Citizen.Wait(UPDATE_INTERVAL)
-    
-  end
-end)
+end
