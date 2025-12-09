@@ -20,5 +20,6 @@ server_scripts {
     "/src/server/events.lua"
 }
 client_scripts {
-    "/src/client/announcement.lua"
+    "/src/client/announcement.lua",
+    "/src/client/deathtracker.lua"
 }
