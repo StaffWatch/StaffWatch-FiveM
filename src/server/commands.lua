@@ -67,3 +67,21 @@ function handleCommand(command, source, args, rawCommand)
     end
 
 end
+
+-- Freeze command
+RegisterCommand('sw_freeze', function(source, args, rawCommand)
+    if (source == 0) then
+        TriggerClientEvent('sw:freeze', args[1])
+    else
+        print("This command can only be executed by the server!")
+    end
+end, false)
+
+-- Unfreeze command
+RegisterCommand('sw_unfreeze', function(source, args, rawCommand)
+    if (source == 0) then
+        TriggerClientEvent('sw:unfreeze', args[1])
+    else
+        print("This command can only be executed by the server!")
+    end
+end, false)

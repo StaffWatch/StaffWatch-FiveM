@@ -13,11 +13,6 @@ Config = {
     -- Configure templated actions
     TEMPLATED_ACTIONS = {
         {
-            scope = "SERVER",
-            name = "Set Time",
-            command = "set time day"
-        },
-        {
             scope = "PLAYER",
             name = "Freeze",
             command = "sw_freeze"
@@ -27,6 +22,19 @@ Config = {
             name = "Unfreeze",
             command = "sw_unfreeze"
         },
+        -- Demo commands below to show how templated actions can be configured
+        -- Note that player scoped commands can also have arguments (max of 3)
+        -- {
+        --     scope = "SERVER",
+        --     name = "Toggle Priority Cooldown",
+        --     command = "togglepriority",
+        -- },
+        -- {
+        --     scope = "SERVER",
+        --     name = "Set Weather",
+        --     command = "weather",
+        --     arg1Name = "Weather Type (ex: CLEAR, RAIN, FOGGY)",
+        -- },
     }
 
 }

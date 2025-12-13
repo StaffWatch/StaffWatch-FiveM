@@ -2,7 +2,7 @@ local isFrozen = false
 
 -- Freeze Command
 RegisterNetEvent('sw:freeze')
-AddEventHandler('freeze:freezePlayer', function()
+AddEventHandler('sw:freeze', function()
     FreezeEntityPosition(GetPlayerPed(-1), true)
     ClearPedTasksImmediately(GetPlayerPed(-1))
     isFrozen = true
