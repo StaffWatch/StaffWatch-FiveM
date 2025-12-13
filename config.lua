@@ -1,11 +1,11 @@
 Config = {
 
     -- Do not change these values
-    DEBUG = true,
-    API_URL = "http://localhost",
+    DEBUG = false,
+    API_URL = "https://dev-api.staffwatch.app",
 
     -- Found on the manage servers page
-    SECRET = "AwZdDkGhKWixUpkBAeZQ",
+    SECRET = "ENTER_SERVER_SECRET_HERE",
 
     -- Allow join when connection fails?
     BYPASS_ON_FAILURE = true,
