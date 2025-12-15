@@ -52,8 +52,10 @@ function handleCommand(command, source, args, rawCommand)
     DebugLog("Reason: " .. reason)
 
     -- Kick and Ban
-    if (command == "sw_kick" or command == "sw_ban") then
-        DropPlayer(playerId, "StaffWatch: " .. reason)
+    if (command == "sw_kick") then
+        DropPlayer(playerId, "StaffWatch you have been kicked for: " .. reason)
+    elseif (command == "sw_ban") then
+        DropPlayer(playerId, "StaffWatch you have been banned for: " .. reason)
     end
 
     -- Commend
