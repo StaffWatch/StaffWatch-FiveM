@@ -58,18 +58,25 @@ end
 -- Handle banned player
 function HandleBan(def, banInfo)
     if banInfo.rule == nil then
-        banInfo.rule = { name = "No rule provided" }
+        banInfo.rule = { name = "Not Specified" }
     end
-    def.done("\n \n⚠️ You are banned from this server! ⚠️"
-    .. "\n --------------------------------------"
-    .. "\n 📃 Reason: " .. banInfo.reason 
-    .. "\n 🕜 Ban Expires: " ..  banInfo.expiration
-    .. "\n 📖 Rule Broken: " .. banInfo.rule.name
-    .. "\n --------------------------------------" 
-    .. "\n ⚙️ Banned using StaffWatch system. ⚙️"
-    .. "\n Want to appeal your ban?" 
-    .. "\n Go to staffwatch.app/portal and enter code A1B2C."
-    .. "\n --------------------------------------")
+    local message = '\n' .. [[
+    ⚠️ You Are Banned From This Server ⚠️
+    --------------------------------------
+    🚫 Rule: {rule}
+    📝 Reason: {reason}
+    ⏰ Expires: {expiration}
+    --------------------------------------
+    ⚙️ Banned Using StaffWatch.app
+    --------------------------------------
+    📞 Want to appeal this ban?
+    Visit: {appealUrl}
+    ]]
+    message = InputReplace(message, "rule", banInfo.rule.name)
+    message = InputReplace(message, "reason", banInfo.reason)
+    message = InputReplace(message, "expiration", banInfo.expiration)
+    message = InputReplace(message, "appealUrl", banInfo.appealUrl)
+    def.done(message)
 end
 
 -- Prevents player join

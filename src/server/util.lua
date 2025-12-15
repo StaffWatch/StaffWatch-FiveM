@@ -52,3 +52,7 @@ DebugLog = function(msg)
         print(msg)
     end
 end
+
+InputReplace = function(message, hint, content)
+    return message:gsub("{" .. hint .. "}", content)
+end
