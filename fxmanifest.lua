@@ -17,7 +17,8 @@ server_scripts {
     "/src/server/playerDropped.lua",
     "/src/server/commandQueue.lua",
     "/src/server/logger.lua",
-    "/src/server/events.lua"
+    "/src/server/events.lua",
+    "/src/server/portal.lua"
 }
 client_scripts {
     "/src/client/announcement.lua",
