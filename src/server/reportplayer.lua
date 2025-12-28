@@ -9,21 +9,21 @@ RegisterCommand("report", function(source, args, rawCommand)
     -- Get reason
     local reportedPlayerId, reason = string.match(rawCommand, "^%w+%s+(%d+)%s+(.*)")
     if (reportedPlayerId == nil or reason == nil) then
-        print("Invalid usage! Use /report [playerId] [reason]")
+        SendChatMessage(source, "Invalid usage! Use /report [playerId] [reason]")
         return
     end
 
     -- Get player primary identifier
     local primaryId = GetPlayerPrimaryIdentifier(source)
     if (primaryId == nil) then
-        print("No primary ID found for player!")
+        SendChatMessage(source, "No primary ID found for player!")
         return
     end
 
     -- Get reported player license
     local reportedId = GetPlayerPrimaryIdentifier(reportedPlayerId)
     if (reportedId == nil) then
-        print("No primary ID found for reported player!")
+        SendChatMessage(source, "No primary ID found for reported player!")
         return
     end
 
@@ -40,6 +40,7 @@ RegisterCommand("report", function(source, args, rawCommand)
 
     -- Handle failure
     if (status ~= 200) then
+        SendChatMessage(source, "Report failed! Error: " .. errorData)
         print("Warning: Report failed with status code: " .. status)
         print("Failure reason: " .. errorData)
         return

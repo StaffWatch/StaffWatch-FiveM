@@ -10,7 +10,7 @@ RegisterCommand("portal", function(source, _, _)
     local primaryId = GetPlayerPrimaryIdentifier(source)
     DebugLog("Primary ID" .. primaryId)
     if (primaryId == nil) then
-        print("No primary ID found for player!")
+        SendChatMessage(source, "No primary ID found for player!")
         return
     end
 
@@ -27,6 +27,7 @@ RegisterCommand("portal", function(source, _, _)
 
     -- Handle failure
     if (status ~= 200) then
+        SendChatMessage(source, "Portal link generation failed! Error: " .. errorData)
         print("Warning: Portal link generation failed with status code: " .. status)
         print("Failure reason: " .. errorData)
         return

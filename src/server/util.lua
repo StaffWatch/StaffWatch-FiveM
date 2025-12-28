@@ -41,9 +41,9 @@ end
 
 SendChatMessage = function (playerId, message)
     TriggerClientEvent('chat:addMessage', playerId, {
-        color = {0, 0, 255},
+        color = {31, 214, 255},
         multiline = false,
-        args = {"StaffWatch", message}
+        args = {"[StaffWatch] ", message}
     })
 end
 
