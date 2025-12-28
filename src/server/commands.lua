@@ -74,6 +74,7 @@ end
 RegisterCommand('sw_freeze', function(source, args, rawCommand)
     if (source == 0) then
         TriggerClientEvent('sw:freeze', args[1])
+        TriggerClientEvent('sw:createAnnouncement', args[1], "~b~Frozen by Staff", "You have been frozen by staff. Please standby for further instructions.", 5000)
     else
         print("This command can only be executed by the server!")
     end
@@ -83,6 +84,17 @@ end, false)
 RegisterCommand('sw_unfreeze', function(source, args, rawCommand)
     if (source == 0) then
         TriggerClientEvent('sw:unfreeze', args[1])
+        TriggerClientEvent('sw:createAnnouncement', args[1], "~b~Unfrozen by Staff", "You have been unfrozen by staff. You may now move freely.", 5000)
+    else
+        print("This command can only be executed by the server!")
+    end
+end, false)
+
+RegisterCommand("sw_announce", function(source, args, rawCommand)
+    if source == 0 then
+        local message = table.concat(args, " ")
+        DebugLog("Announcement Message: " .. message)
+        TriggerClientEvent('sw:createAnnouncement', -1, "~b~Server Announcement", message, 10000)
     else
         print("This command can only be executed by the server!")
     end
