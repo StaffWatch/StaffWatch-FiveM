@@ -23,5 +23,9 @@ server_scripts {
 client_scripts {
     "/src/client/announcement.lua",
     "/src/client/deathtracker.lua",
-    "/src/client/freeze.lua"
+    "/src/client/freeze.lua",
+    "/src/client/notify.lua",
+}
+files {
+    '/src/resources/announce-logo.png'
 }

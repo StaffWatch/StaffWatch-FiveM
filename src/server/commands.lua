@@ -98,3 +98,14 @@ RegisterCommand("sw_announce", function(source, args, rawCommand)
         TriggerClientEvent('sw:createAnnouncement', -1, "~b~Server Announcement", message, 10000)
     end
 end, false)
+
+-- Notify command
+RegisterCommand("sw_notify", function(source, args, rawCommand)
+    if source == 0 then
+        local fullArgs = table.concat(args, " ")
+        local playerId, title, message = string.match(fullArgs, '^(%d+) TITLE: (.+) MSG: (.+)$')
+        print(playerId, title, message)
+        SendChatMessage(playerId, "~b~" .. title .. ": ~w~" .. message)
+        TriggerClientEvent('sw:notify', playerId, title, message)
+    end
+end, false)
