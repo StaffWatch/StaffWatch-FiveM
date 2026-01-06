@@ -2,7 +2,7 @@ Config = {
 
     -- Do not change these values
     DEBUG = false,
-    API_URL = "https://dev-api.staffwatch.app",
+    API_URL = "https://api.staffwatch.app",
 
     -- Found on the manage servers page
     SECRET = "ENTER_SERVER_SECRET_HERE",
