@@ -55,7 +55,7 @@ function handleCommand(command, source, args, rawCommand)
     if (command == "sw_ban") then
         DropPlayer(playerId, "StaffWatch you have been banned for: " .. reason)
         if Config.BROADCAST_ACTIONS_TO_SERVER then
-            SendChatMessage( -1,GetPlayerName(playerId) .. " has been banned for: " .. reason)
+            SendChatMessage(-1, GetPlayerName(playerId) .. " has been banned for: " .. reason)
         end
     end
 
@@ -63,7 +63,7 @@ function handleCommand(command, source, args, rawCommand)
     if (command == "sw_kick") then
         DropPlayer(playerId, "StaffWatch you have been kicked for: " .. reason)
         if Config.BROADCAST_ACTIONS_TO_SERVER then
-            SendChatMessage( -1,GetPlayerName(playerId) .. " has been kicked for: " .. reason)
+            SendChatMessage(-1, GetPlayerName(playerId) .. " has been kicked for: " .. reason)
         end
     end
 
@@ -71,7 +71,9 @@ function handleCommand(command, source, args, rawCommand)
     if (command == "sw_commend") then
         TriggerClientEvent("sw:createAnnouncement", playerId, "~g~StaffWatch Commendation", "You've been commended for: " .. reason, 5000)
         if Config.BROADCAST_ACTIONS_TO_SERVER then
-            SendChatMessage( -1,GetPlayerName(playerId) .. " has been commended for: " .. reason)
+            SendChatMessage(-1, GetPlayerName(playerId) .. " has been commended for: " .. reason)
+        else
+            SendChatMessage(playerId, "You have been commended for: " .. reason)
         end
     end
 
@@ -79,7 +81,9 @@ function handleCommand(command, source, args, rawCommand)
     if (command == "sw_warn") then
         TriggerClientEvent("sw:createAnnouncement", playerId, "~y~StaffWatch Warning", "You've been warned for: " .. reason, 8000)
         if Config.BROADCAST_ACTIONS_TO_SERVER then
-            SendChatMessage( -1,GetPlayerName(playerId) .. " has been warned for: " .. reason)
+            SendChatMessage(-1, GetPlayerName(playerId) .. " has been warned for: " .. reason)
+        else
+            SendChatMessage(playerId, "You have been warned for: " .. reason)
         end
     end
 
