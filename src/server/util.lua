@@ -47,12 +47,11 @@ SendChatMessage = function (playerId, message)
     })
 end
 
-SendGlobalMessage = function(message)
-    TriggerEvent('chat:addMessage', {
-        color = { 255, 255, 255 },
-        multiline = false,
-        args = {"StaffWatch", message}
-    })
+SendGlobalMessage = function (message)
+    local players = GetPlayers()
+    for _, playerId in ipairs(players) do
+        SendChatMessage(playerId, message)
+    end
 end
 
 DebugLog = function(msg)
