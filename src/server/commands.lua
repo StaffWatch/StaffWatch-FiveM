@@ -51,23 +51,40 @@ function handleCommand(command, source, args, rawCommand)
     local reason = string.sub(rawCommand, #command + #license + 3)
     DebugLog("Reason: " .. reason)
 
-    -- Kick and Ban
+     -- Ban
+    if (command == "sw_ban") then
+        DropPlayer(playerId, "StaffWatch you have been banned for: " .. reason)
+        if Config.BROADCAST_ACTIONS_TO_SERVER then
+            SendChatMessage(-1, GetPlayerName(playerId) .. " has been banned for: " .. reason)
+        end
+    end
+
+    -- Kick
     if (command == "sw_kick") then
-        DropPlayer(playerId, "You have been kicked for: " .. reason)
-    elseif (command == "sw_ban") then
-        DropPlayer(playerId, "You have been banned for: " .. reason .. '\nReconnect for details and appeal instructions')
+        DropPlayer(playerId, "StaffWatch you have been kicked for: " .. reason)
+        if Config.BROADCAST_ACTIONS_TO_SERVER then
+            SendChatMessage(-1, GetPlayerName(playerId) .. " has been kicked for: " .. reason)
+        end
     end
 
     -- Commend
     if (command == "sw_commend") then
-        SendChatMessage(playerId, "You have been commended for: " .. reason)
         TriggerClientEvent("sw:createAnnouncement", playerId, "~g~StaffWatch Commendation", "You've been commended for: " .. reason, 5000)
+        if Config.BROADCAST_ACTIONS_TO_SERVER then
+            SendChatMessage(-1, GetPlayerName(playerId) .. " has been commended for: " .. reason)
+        else
+            SendChatMessage(playerId, "You have been commended for: " .. reason)
+        end
     end
 
     -- Warn
     if (command == "sw_warn") then
-        SendChatMessage(playerId, "You have been warned for: " .. reason)
         TriggerClientEvent("sw:createAnnouncement", playerId, "~y~StaffWatch Warning", "You've been warned for: " .. reason, 8000)
+        if Config.BROADCAST_ACTIONS_TO_SERVER then
+            SendChatMessage(-1, GetPlayerName(playerId) .. " has been warned for: " .. reason)
+        else
+            SendChatMessage(playerId, "You have been warned for: " .. reason)
+        end
     end
 
 end
