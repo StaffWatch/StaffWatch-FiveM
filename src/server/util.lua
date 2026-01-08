@@ -41,9 +41,9 @@ end
 
 SendChatMessage = function (playerId, message)
     TriggerClientEvent('chat:addMessage', playerId, {
-        color = {0, 0, 255},
+        color = {31, 214, 255},
         multiline = false,
-        args = {"StaffWatch", message}
+        args = {"[StaffWatch] ", message}
     })
 end
 
@@ -58,4 +58,8 @@ DebugLog = function(msg)
     if (Config.DEBUG) then
         print(msg)
     end
+end
+
+InputReplace = function(message, hint, content)
+    return message:gsub("{" .. hint .. "}", content)
 end

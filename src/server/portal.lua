@@ -1,4 +1,4 @@
-RegisterCommand("link", function(source, _, _)
+RegisterCommand("portal", function(source, _, _)
     
     -- Disallow console execution
     if (source == 0) then
@@ -15,20 +15,20 @@ RegisterCommand("link", function(source, _, _)
     end
 
     -- Create OTP request
-    local linkReqBody = json.encode({
+    local portalReqBody = json.encode({
         secret = Config.SECRET,
         primaryIdentifier = primaryId
     })
 
     -- Send request to server
     local status, resultData, resultHeaders, errorData = PerformHttpRequestAwait(
-        Config.API_URL .. "/api/link", "POST", linkReqBody, {["Content-Type"] = 'application/json'}
+        Config.API_URL .. "/api/portal", "POST", portalReqBody, {["Content-Type"] = 'application/json'}
     )
 
     -- Handle failure
     if (status ~= 200) then
-        SendChatMessage(source, "Linking failed! Error message: " .. errorData)
-        print("Warning: Link failed with status code: " .. status)
+        SendChatMessage(source, "Portal link generation failed! Error: " .. errorData)
+        print("Warning: Portal link generation failed with status code: " .. status)
         print("Failure reason: " .. errorData)
         return
     end

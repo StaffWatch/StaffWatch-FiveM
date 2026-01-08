@@ -9,14 +9,14 @@ RegisterCommand("staffrequest", function(source, args, rawCommand)
     -- Get reason
     local reason = string.match(rawCommand, "^%w+%s+(.*)")
     if (reason == nil) then
-        print("Invalid reason specified!")
+        SendChatMessage(source, "Invalid reason specified!")
         return
     end
 
     -- Get player primary identifier
     local primaryId = GetPlayerPrimaryIdentifier(source)
     if (primaryId == nil) then
-        print("No primary ID found for player!")
+        SendChatMessage(source, "No primary ID found for player!")
         return
     end
 
@@ -32,6 +32,7 @@ RegisterCommand("staffrequest", function(source, args, rawCommand)
 
     -- Handle failure
     if (status ~= 200) then
+        SendChatMessage(source, "Request failed! Error: " .. errorData)
         print("Warning: Request failed with status code: " .. status)
         print("Failure reason: " .. errorData)
         return

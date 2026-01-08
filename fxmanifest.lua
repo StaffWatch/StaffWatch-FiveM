@@ -17,10 +17,15 @@ server_scripts {
     "/src/server/playerDropped.lua",
     "/src/server/commandQueue.lua",
     "/src/server/logger.lua",
-    "/src/server/events.lua"
+    "/src/server/events.lua",
+    "/src/server/portal.lua"
 }
 client_scripts {
     "/src/client/announcement.lua",
     "/src/client/deathtracker.lua",
-    "/src/client/freeze.lua"
+    "/src/client/freeze.lua",
+    "/src/client/notify.lua",
+}
+files {
+    '/src/resources/announce-logo.png'
 }
