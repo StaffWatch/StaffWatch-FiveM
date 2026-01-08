@@ -47,13 +47,6 @@ SendChatMessage = function (playerId, message)
     })
 end
 
-SendGlobalMessage = function (message)
-    local players = GetPlayers()
-    for _, playerId in ipairs(players) do
-        SendChatMessage(playerId, message)
-    end
-end
-
 DebugLog = function(msg)
     if (Config.DEBUG) then
         print(msg)
