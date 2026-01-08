@@ -88,29 +88,37 @@ end
 -- Freeze command
 RegisterCommand('sw_freeze', function(source, args, rawCommand)
     if (source == 0) then
+        SendChatMessage(args[1], "You have been frozen by staff.")
         TriggerClientEvent('sw:freeze', args[1])
         TriggerClientEvent('sw:createAnnouncement', args[1], "~b~Frozen by Staff", "You have been frozen by staff. Please standby for further instructions.", 5000)
-    else
-        print("This command can only be executed by the server!")
     end
 end, false)
 
 -- Unfreeze command
 RegisterCommand('sw_unfreeze', function(source, args, rawCommand)
     if (source == 0) then
+        SendChatMessage(args[1], "You have been unfrozen by staff.")
         TriggerClientEvent('sw:unfreeze', args[1])
         TriggerClientEvent('sw:createAnnouncement', args[1], "~b~Unfrozen by Staff", "You have been unfrozen by staff. You may now move freely.", 5000)
-    else
-        print("This command can only be executed by the server!")
     end
 end, false)
 
+-- Announce command
 RegisterCommand("sw_announce", function(source, args, rawCommand)
     if source == 0 then
         local message = table.concat(args, " ")
-        DebugLog("Announcement Message: " .. message)
+        SendChatMessage(-1, "Server Announcement: " .. message)
         TriggerClientEvent('sw:createAnnouncement', -1, "~b~Server Announcement", message, 10000)
-    else
-        print("This command can only be executed by the server!")
+    end
+end, false)
+
+-- Notify command
+RegisterCommand("sw_notify", function(source, args, rawCommand)
+    if source == 0 then
+        local fullArgs = table.concat(args, " ")
+        local playerId, title, message = string.match(fullArgs, '^(%d+) TITLE: (.+) MSG: (.+)$')
+        print(playerId, title, message)
+        SendChatMessage(playerId, "~b~" .. title .. ": ~w~" .. message)
+        TriggerClientEvent('sw:notify', playerId, title, message)
     end
 end, false)
