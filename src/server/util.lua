@@ -47,6 +47,14 @@ SendChatMessage = function (playerId, message)
     })
 end
 
+SendGlobalMessage = function(message)
+    TriggerEvent('chat:addMessage', {
+        color = { 255, 255, 255 },
+        multiline = false,
+        args = {"StaffWatch", message}
+    })
+end
+
 DebugLog = function(msg)
     if (Config.DEBUG) then
         print(msg)
