@@ -13,6 +13,9 @@ Config = {
     -- Broadcast moderation actions (warnings, kicks, bans, etc...) to the chat for other players to see?
     BROADCAST_ACTIONS_TO_SERVER = true,
 
+    -- Show moderator that banned player when they join?
+    SHOW_SOURCE_OF_ACTION = true,
+
     -- Configure templated actions
     TEMPLATED_ACTIONS = {
         {
