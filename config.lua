@@ -13,6 +13,9 @@ Config = {
     -- Broadcast moderation actions (warnings, kicks, bans, etc...) to the chat for other players to see?
     BROADCAST_ACTIONS_TO_SERVER = true,
 
+    -- Show staff that banned player on join?
+    SHOW_STAFF_ON_BANNED_PLAYER_JOIN = true,
+
     -- Configure templated actions
     TEMPLATED_ACTIONS = {
         {
