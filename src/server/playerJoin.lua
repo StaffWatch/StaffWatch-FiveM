@@ -61,46 +61,37 @@ function HandleBan(def, banInfo)
         banInfo.rule = { name = "Not Specified" }
     end
 
-    if Config.SHOW_SOURCE_OF_ACTION then
-        local message = '\n' .. [[
-        ⚠️ You Are Banned From This Server ⚠️
-        --------------------------------------
-        🚫 Rule: {rule}
-        👤 Staff: {staff}
-        📝 Reason: {reason}
-        ⏰ Expires: {expiration}
-        --------------------------------------
-        ⚙️ Banned Using StaffWatch.app
-        --------------------------------------
-        📞 Want to appeal this ban?
-        Visit: {appealUrl}
-        ]]
-        message = InputReplace(message, "rule", banInfo.rule.name)
-        message = InputReplace(message, "reason", banInfo.reason)
-        message = InputReplace(message, "expiration", banInfo.expiration)
-        message = InputReplace(message, "appealUrl", banInfo.appealUrl)
+    local lines = {
+        "--------------------------------------",
+        "⚠️ You Are Banned From This Server ⚠️",
+        "--------------------------------------",
+        "🚫 Rule: " .. banInfo.rule.name,
+        "📝 Reason: " .. banInfo.reason,
+        "⏰ Expires: " .. banInfo.expiration,
+        "--------------------------------------",
+        "⚙️ Banned Using StaffWatch.app",
+        "--------------------------------------",
+        "📞 Want to appeal this ban?",
+        "Visit: " .. banInfo.appealUrl,
+        "--------------------------------------"
+    }
+
+    if Config.SHOW_STAFF_ON_BANNED_PLAYER_JOIN then
+        table.insert(lines, 4, "👤 Staff: {staff}")
+    end
+
+    local message = '\n' .. table.concat(lines, '\n')
+
+    message = InputReplace(message, "rule", banInfo.rule.name)
+    message = InputReplace(message, "reason", banInfo.reason)
+    message = InputReplace(message, "expiration", banInfo.expiration)
+    message = InputReplace(message, "appealUrl", banInfo.appealUrl)
+        
+    if Config.SHOW_STAFF_ON_BANNED_PLAYER_JOIN then
         message = InputReplace(message, "staff", banInfo.staffUsername)
-        def.done(message)
-    else
-        local message = '\n' .. [[
-        ⚠️ You Are Banned From This Server ⚠️
-        --------------------------------------
-        🚫 Rule: {rule}
-        📝 Reason: {reason}
-        ⏰ Expires: {expiration}
-        --------------------------------------
-        ⚙️ Banned Using StaffWatch.app
-        --------------------------------------
-        📞 Want to appeal this ban?
-        Visit: {appealUrl}
-        ]]
-        message = InputReplace(message, "rule", banInfo.rule.name)
-        message = InputReplace(message, "reason", banInfo.reason)
-        message = InputReplace(message, "expiration", banInfo.expiration)
-        message = InputReplace(message, "appealUrl", banInfo.appealUrl)
-        def.done(message)
     end
     
+    def.done(message)
 end
 
 -- Prevents player join
