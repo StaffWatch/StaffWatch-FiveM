@@ -56,3 +56,25 @@ end
 InputReplace = function(message, hint, content)
     return message:gsub("{" .. hint .. "}", content)
 end
+
+SendAPIRequest = function(endpoint, data)
+    -- Create full URL and log the request
+    local url = Config.API_URL .. endpoint
+    DebugLog("API Request: " .. url)
+    DebugLog("Request Data: " .. json.encode(data))
+    
+    -- Send the request to the server
+    local status, resultData, _, errorData = PerformHttpRequestAwait(
+        url, "POST", json.encode(data), {["Content-Type"] = 'application/json'}
+    )
+
+    if (status ~= 200) then
+        -- Log the error and return failure
+        print("API Request Failed (" .. status .. "): " .. errorData)
+        return false, errorData
+    else
+        -- Log the successful response and return success
+        DebugLog("Response (" .. status .. "): " .. resultData)
+        return true, resultData
+    end
+end

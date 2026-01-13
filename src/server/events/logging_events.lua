@@ -1,7 +1,7 @@
 -- Chat Message Logs
 RegisterNetEvent('chatMessage')
 AddEventHandler('chatMessage', function(source, author, text)
-    LogEvent("%ARBITRATOR% sent a chat message: " .. text, source)
+    LogEvent("%ARBITRATOR%: " .. text, source)
 end)
 
 -- Player Join Logs

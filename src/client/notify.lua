@@ -1,7 +1,7 @@
 RegisterNetEvent('sw:notify')
 AddEventHandler('sw:notify', function(title, message)
     local notificationTxd = CreateRuntimeTxd("sw_notification")
-    CreateRuntimeTextureFromImage(notificationTxd, 'small_logo', '/src/resources/announce-logo.png')
+    CreateRuntimeTextureFromImage(notificationTxd, 'small_logo', '/src/resources/announce_logo.png')
     BeginTextCommandThefeedPost("STRING")
     AddTextComponentSubstringPlayerName(message)
     EndTextCommandThefeedPostMessagetext("sw_notification", "small_logo", false, 0, "StaffWatch", "~b~" .. title)
