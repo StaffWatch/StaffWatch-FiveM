@@ -1,5 +1,4 @@
 RegisterCommand("report", function(source, args, rawCommand)
-
     -- Disallow console execution
     if (source == 0) then
         print("Only players can execute this command!")
@@ -27,28 +26,20 @@ RegisterCommand("report", function(source, args, rawCommand)
         return
     end
 
-    -- Send request to server
-    local status, resultData, resultHeaders, errorData = PerformHttpRequestAwait(
-        Config.API_URL .. "/api/report", "POST", json.encode({
-            type = "REPORT",
-            secret = Config.SECRET,
-            reporterPrimaryIdentifier = primaryId,
-            reportedPrimaryIdentifier = reportedId,
-            reason = reason
-        }), {["Content-Type"] = 'application/json'}
-    )
+    local success, response = SendAPIRequest("/api/report", {
+        type = "REPORT",
+        secret = Config.SECRET,
+        reporterPrimaryIdentifier = primaryId,
+        reportedPrimaryIdentifier = reportedId,
+        reason = reason
+    })
 
     -- Handle failure
-    if (status ~= 200) then
-        SendChatMessage(source, "Report failed! Error: " .. errorData)
-        print("Warning: Report failed with status code: " .. status)
-        print("Failure reason: " .. errorData)
+    if (not success) then
+        SendChatMessage(source, "Report failed! Error: " .. response)
         return
     end
 
-    -- Get result from API call
-    DebugLog(resultData)
-    
     -- Send message to player
-    SendChatMessage(source, resultData)
+    SendChatMessage(source, response)
 end)

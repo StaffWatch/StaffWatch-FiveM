@@ -1,31 +1,17 @@
-AddEventHandler("playerConnecting", function(name, setReason, deferrals)
+AddEventHandler("playerConnecting", function(name, _, deferrals)
     deferrals.defer()
 
     -- Get player
     local playerDto = CreatePlayerDTO(name, source)
 
-    -- Convert DTO to json
-    local jsonData = json.encode({
+    -- Send connection request
+    local success, rawResponse = SendAPIRequest("/api/request-join", {
         secret = Config.SECRET,
         player = playerDto
     })
 
-    DebugLog('Player join JSON:')
-    DebugLog(jsonData)
-
-    -- Send request to server
-    local status, resultData, resultHeaders, errorData = PerformHttpRequestAwait(
-        Config.API_URL .. "/api/player-join", "POST", jsonData, {["Content-Type"] = 'application/json'}
-    )
-
-    DebugLog(status)
-    DebugLog(resultData)
-    DebugLog(errorData)
-    
-    -- Handle failure
-    if (status ~= 200) then
-        print("Warning: Player join validation failed with status code: " .. status)
-        print("Failure reason: " .. errorData)
+    -- Handle request failure
+    if (not success) then
         if (Config.BYPASS_ON_FAILURE) then
             deferrals.update("⚠️ StaffWatch failed to authenticate your connection! You will automatically join in 5 seconds, but server development should be contacted! ⚠️")
             Citizen.Wait(5000)
@@ -37,7 +23,7 @@ AddEventHandler("playerConnecting", function(name, setReason, deferrals)
     end
 
     -- Handle response from API
-    local response = json.decode(resultData)
+    local response = json.decode(rawResponse)
     if (response.allowJoin) then
         AllowJoin(deferrals)
     elseif (response.banInfo) then
