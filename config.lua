@@ -10,6 +10,9 @@ Config = {
     -- Allow join when connection fails?
     BYPASS_ON_FAILURE = true,
 
+    -- Broadcast moderation actions (warnings, kicks, bans, etc...) to the chat for other players to see?
+    BROADCAST_ACTIONS_TO_SERVER = true,
+
     -- Configure templated actions
     TEMPLATED_ACTIONS = {
         {
