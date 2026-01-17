@@ -1,4 +1,4 @@
-AddEventHandler("playerJoining", function(source, _)
+AddEventHandler("playerJoining", function(_, _)
     local playerDto = CreatePlayerDTO(GetPlayerName(source), source)
     SendAPIRequest("/api/player-join", {
         secret = Config.SECRET,
