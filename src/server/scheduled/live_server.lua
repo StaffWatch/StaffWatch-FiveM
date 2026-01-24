@@ -2,7 +2,7 @@ SW_SERVER_DATA = {}
 
 Citizen.CreateThread(function()
   while true do
-    Citizen.Wait(1500)
+    Citizen.Wait(500)
     pcall(RetrieveAndSendLiveData)
   end
 end)

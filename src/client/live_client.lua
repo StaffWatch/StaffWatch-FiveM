@@ -19,6 +19,7 @@ AddEventHandler('sw:requestLivePlayer', function()
     if IsPedSittingInAnyVehicle(GetPlayerPed(-1)) then
         player_data["Vehicle"] = GetVehicleMakeModel()
         player_data["Speed"] = GetVehicleSpeed() .. " mph"
+        player_data["Seat"] = GetVehicleSeat()
     end
 
     TriggerServerEvent('sw:updateLivePlayer', player_data)
@@ -89,4 +90,19 @@ function GetVehicleSpeed()
     local vehicle = GetVehiclePedIsIn(GetPlayerPed(-1), false)
     local speed = GetEntitySpeed(vehicle) * 2.23694 -- Convert m/s to mph
     return math.floor(speed)
+end
+
+function GetVehicleSeat()
+    local ped = GetPlayerPed(-1)
+    local vehicle = GetVehiclePedIsIn(ped, false)
+    for seat = -1, GetVehicleMaxNumberOfPassengers(vehicle) - 1 do
+        if GetPedInVehicleSeat(vehicle, seat) == ped then
+            if seat == -1 then
+                return "Driver"
+            else
+                return "Seat #" .. seat
+            end
+        end
+    end
+    return "Unknown"
 end
