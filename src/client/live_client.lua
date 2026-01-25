@@ -2,6 +2,10 @@ RegisterNetEvent('sw:requestLivePlayer')
 AddEventHandler('sw:requestLivePlayer', function()
     local player_data = {}
 
+    -- Identification fields
+    player_data["InGameId"] = GetPlayerServerId(PlayerId())
+    player_data["Name"] = GetPlayerName(PlayerId())
+
     -- Standard fields
     player_data["Health"] = GetHealth()
     player_data["Armor"] = GetArmor()
