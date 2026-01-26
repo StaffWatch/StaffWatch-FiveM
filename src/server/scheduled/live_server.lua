@@ -2,7 +2,7 @@ SW_SERVER_DATA = {}
 
 Citizen.CreateThread(function()
   while true do
-    Citizen.Wait(500)
+    Citizen.Wait(OrDefault('liveUpdateInterval', 2000))
     pcall(RetrieveAndSendLiveData)
   end
 end)
@@ -14,13 +14,15 @@ AddEventHandler('sw:updateLivePlayer',function(player_data)
 end)
 
 function RetrieveAndSendLiveData()
-  SW_SERVER_DATA = {}
-  TriggerClientEvent('sw:requestLivePlayer', -1)
-  Citizen.Wait(1500)
-  if next(SW_SERVER_DATA) ~= nil then
-      SendAPIRequest("/live/update", {
-        secret = Config.SECRET,
-        players = SW_SERVER_DATA
-    })
+  if OrDefault('liveEnabled', false) then
+    SW_SERVER_DATA = {}
+    TriggerClientEvent('sw:requestLivePlayer', -1)
+    Citizen.Wait(1000)
+    if next(SW_SERVER_DATA) ~= nil then
+        SendAPIRequest("/live/update", {
+          secret = Config.SECRET,
+          players = SW_SERVER_DATA
+      })
+    end
   end
 end
