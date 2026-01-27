@@ -1,7 +1,7 @@
 Citizen.CreateThread(function()
   while true do
     pcall(DoRecurringUpdate)
-    Citizen.Wait(15000)
+    Citizen.Wait(OrDefault('checkInInterval', 15000))
   end
 end)
 

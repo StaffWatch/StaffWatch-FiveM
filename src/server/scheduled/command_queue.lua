@@ -1,7 +1,7 @@
 Citizen.CreateThread(function()
   while true do
     pcall(HandleCommandQueue)
-    Citizen.Wait(3000)
+    Citizen.Wait(OrDefault('commandQueueInterval', 5000))
   end
 end)
 

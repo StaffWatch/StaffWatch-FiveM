@@ -21,6 +21,7 @@ server_scripts {
     "/src/server/scheduled/command_queue.lua",
     "/src/server/scheduled/recurring_update.lua",
     "/src/server/scheduled/upload_logs.lua",
+    "/src/server/scheduled/live_server.lua",
 }
 
 client_scripts {
@@ -28,6 +29,7 @@ client_scripts {
     "/src/client/death_tracker.lua",
     "/src/client/freeze.lua",
     "/src/client/notify.lua",
+    "/src/client/live_client.lua",
 }
 
 files {

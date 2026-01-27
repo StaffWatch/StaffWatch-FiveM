@@ -15,7 +15,7 @@ end
 Citizen.CreateThread(function()
   while true do
     pcall(UploadLogs)
-    Citizen.Wait(5000)
+    Citizen.Wait(OrDefault('logUploadInterval', 5000))
   end
 end)
 
