@@ -14,6 +14,7 @@ Citizen.CreateThread(function()
     while true do
         Citizen.Wait(50)
         local ped = GetPlayerPed(-1)
+        local coords = GetEntityCoords(ped)
         if IsEntityDead(ped) and not isDead then
 			local killer = GetPedKiller(ped)
             local KillerId = nil
@@ -24,31 +25,32 @@ Citizen.CreateThread(function()
             end
             local death = GetPedCauseOfDeath(ped)
             if checkArray (Melee, death) then
-                TriggerServerEvent('playerDiedFromPlayer', " meleed ", KillerId)
+                TriggerServerEvent('playerDiedFromPlayer', "meleed", KillerId, GetStreetName(), coords.x, coords.y, coords.z)
             elseif checkArray (Bullet, death) then
-                TriggerServerEvent('playerDiedFromPlayer', " shot ", KillerId)
+                TriggerServerEvent('playerDiedFromPlayer', "shot", KillerId, GetStreetName(), coords.x, coords.y, coords.z)
             elseif checkArray (Knife, death) then
-                TriggerServerEvent('playerDiedFromPlayer', " stabbed ", KillerId)
+                TriggerServerEvent('playerDiedFromPlayer', "stabbed", KillerId, GetStreetName(), coords.x, coords.y, coords.z)
             elseif checkArray (Car, death) then
-                TriggerServerEvent('playerDiedFromPlayer', " hit ", KillerId)
+                TriggerServerEvent('playerDiedFromPlayer', "hit", KillerId, GetStreetName(), coords.x, coords.y, coords.z)
             elseif checkArray (Animal, death) then
-                TriggerServerEvent('playerDied', " died by an animal")
+                TriggerServerEvent('playerDied', "died by an animal", GetStreetName(), coords.x, coords.y, coords.z)
             elseif checkArray (FallDamage, death) then
-                TriggerServerEvent('playerDied', " died of fall damage")
+                TriggerServerEvent('playerDied', "died of fall damage", GetStreetName(), coords.x, coords.y, coords.z)
             elseif checkArray (Explosion, death) then
-                TriggerServerEvent('playerDied', " died of an explosion")
+                TriggerServerEvent('playerDied', "died of an explosion", GetStreetName(), coords.x, coords.y, coords.z)
             elseif checkArray (Gas, death) then
-                TriggerServerEvent('playerDied', " died of gas")
+                TriggerServerEvent('playerDied', "died of gas", GetStreetName(), coords.x, coords.y, coords.z)
             elseif checkArray (Burn, death) then
-                TriggerServerEvent('playerDied', " burned to death")
+                TriggerServerEvent('playerDied', "burned to death", GetStreetName(), coords.x, coords.y, coords.z)
             elseif checkArray (Drown, death) then
-                TriggerServerEvent('playerDied', " drowned")
+                TriggerServerEvent('playerDied', "drowned", GetStreetName(), coords.x, coords.y, coords.z)
             else
-                TriggerServerEvent('playerDied', " was killed by an unknown force")
+                TriggerServerEvent('playerDied', "was killed by an unknown force", GetStreetName(), coords.x, coords.y, coords.z)
             end
             isDead = true
         end
-		if not IsEntityDead(ped) then
+		if not IsEntityDead(ped) and isDead then
+            TriggerServerEvent('playerRespawned', GetStreetName(), coords.x, coords.y, coords.z)
 			isDead = false
         end
 	end

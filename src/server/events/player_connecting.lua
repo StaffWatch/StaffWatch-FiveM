@@ -1,6 +1,9 @@
 AddEventHandler("playerConnecting", function(name, _, deferrals)
     deferrals.defer()
 
+    -- Log join request
+    LogEvent("JOIN_ATTEMPT", source, nil, {})
+
     -- Get player
     local playerDto = CreatePlayerDTO(name, source)
 

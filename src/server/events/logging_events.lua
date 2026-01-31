@@ -1,26 +1,51 @@
 -- Chat Message Logs
 RegisterNetEvent('chatMessage')
 AddEventHandler('chatMessage', function(source, author, text)
-    LogEvent("%ARBITRATOR%: " .. text, source)
+    LogEvent("CHAT_MESSAGE", source, nil, {
+        content = text
+    })
 end)
 
 -- Player Join Logs
-AddEventHandler('playerConnecting', function()
-    LogEvent("%ARBITRATOR% joined the server", source)
+AddEventHandler('playerJoining', function()
+    LogEvent("PLAYER_JOIN", source, nil, {})
 end)
 
 -- Player Leave Logs
 AddEventHandler('playerDropped', function()
-	LogEvent("%ARBITRATOR% left the server", source)
+	LogEvent("PLAYER_LEAVE", source, nil, {})
 end)
 
 -- Player Death
 RegisterServerEvent('playerDied')
-AddEventHandler('playerDied',function(message)
-    LogEvent("%ARBITRATOR%" .. message, source)
+AddEventHandler('playerDied',function(message, location, x, y, z)
+    LogEvent("PLAYER_DIED", source, nil, {
+        content = message,
+        location = location,
+        coordinatesX = x,
+        coordinatesY = y,
+        coordinatesZ = z
+    })
 end)
 
 RegisterServerEvent('playerDiedFromPlayer')
-AddEventHandler('playerDiedFromPlayer',function(message, killer_id)
-    LogEvent("%ARBITRATOR%" .. message .. "%TARGET%", killer_id, source)
+AddEventHandler('playerDiedFromPlayer',function(message, killer_id, location, x, y, z)
+    LogEvent("PLAYER_KILLED", killer_id, source, {
+        content = message,
+        location = location,
+        coordinatesX = x,
+        coordinatesY = y,
+        coordinatesZ = z
+    })
+end)
+
+-- Player Revived
+RegisterServerEvent('playerRespawned')
+AddEventHandler('playerRespawned',function(location, x, y, z)
+    LogEvent("PLAYER_RESPAWN", source, nil, {
+        location = location,
+        coordinatesX = x,
+        coordinatesY = y,
+        coordinatesZ = z
+    })
 end)

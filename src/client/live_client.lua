@@ -69,7 +69,7 @@ function GetAction()
     end
 end
 
-function GetStreetName()
+GetStreetName = function()
     local playerPed = GetPlayerPed(-1)
     local coord = GetEntityCoords(playerPed)
     local streetHash = GetStreetNameAtCoord(coord.x, coord.y, coord.z)
