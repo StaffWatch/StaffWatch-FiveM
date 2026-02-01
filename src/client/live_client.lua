@@ -69,12 +69,18 @@ function GetAction()
     end
 end
 
-GetStreetName = function()
+function GetStreetName()
     local playerPed = GetPlayerPed(-1)
     local coord = GetEntityCoords(playerPed)
     local streetHash = GetStreetNameAtCoord(coord.x, coord.y, coord.z)
     local streetName = GetStreetNameFromHashKey(streetHash)
     return streetName
+end
+
+GetCombinedLocation = function()
+    local street = GetStreetName()
+    local area = GetAreaName()
+    return street .. ", " .. area
 end
 
 function GetCoordinates()

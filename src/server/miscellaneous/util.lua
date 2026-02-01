@@ -26,15 +26,18 @@ end
 GetPlayerIdByLicense = function (license)
     local players = GetPlayers()
     for _, playerId in ipairs(players) do
-        local playerLicense = GetPlayerIdentifierByType(playerId, "license")
-        if (string.sub(playerLicense, 9) == license) then
-            return playerId
+        if (playerId ~= nil) then
+            local playerLicense = GetPlayerIdentifierByType(playerId, "license")
+            if (string.sub(playerLicense, 9) == license) then
+                return playerId
+            end
         end
     end
     return nil
 end
 
 GetPlayerPrimaryIdentifier = function (playerId)
+    if (playerId == nil) then return nil end
     local playerLicense = GetPlayerIdentifierByType(playerId, "license")
     return string.sub(playerLicense, 9)
 end

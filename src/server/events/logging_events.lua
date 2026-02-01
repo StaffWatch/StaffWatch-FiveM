@@ -18,24 +18,26 @@ end)
 
 -- Player Death
 RegisterServerEvent('playerDied')
-AddEventHandler('playerDied',function(message, location, x, y, z)
+AddEventHandler('playerDied',function(message, location, x, y, z, weapon)
     LogEvent("PLAYER_DIED", source, nil, {
         content = message,
         location = location,
         coordinatesX = x,
         coordinatesY = y,
-        coordinatesZ = z
+        coordinatesZ = z,
+        weapon = weapon
     })
 end)
 
 RegisterServerEvent('playerDiedFromPlayer')
-AddEventHandler('playerDiedFromPlayer',function(message, killer_id, location, x, y, z)
-    LogEvent("PLAYER_KILLED", killer_id, source, {
+AddEventHandler('playerDiedFromPlayer',function(message, killer_id, location, x, y, z, weapon)
+    LogEvent("PLAYER_KILL", killer_id, source, {
         content = message,
         location = location,
         coordinatesX = x,
         coordinatesY = y,
-        coordinatesZ = z
+        coordinatesZ = z,
+        weapon = weapon
     })
 end)
 
