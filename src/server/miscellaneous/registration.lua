@@ -2,9 +2,10 @@ RegistrationResult = {}
 
 Citizen.CreateThread(function()
     Citizen.Wait(5000)
-    local isRegistered = next(RegistrationResult) ~= nil
+    local isRegistered = false
     while not isRegistered do
         pcall(TryRegister)
+        isRegistered = next(RegistrationResult) ~= nil
         Citizen.Wait(10000)
     end
 end)
