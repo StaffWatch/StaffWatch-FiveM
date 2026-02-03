@@ -22,6 +22,7 @@ server_scripts {
     "/src/server/scheduled/recurring_update.lua",
     "/src/server/scheduled/upload_logs.lua",
     "/src/server/scheduled/live_server.lua",
+    "/src/server/events/remote_action.lua",
 }
 
 client_scripts {
