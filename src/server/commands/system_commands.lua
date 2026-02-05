@@ -86,19 +86,27 @@ function handleCommand(command, source, args, rawCommand)
     -- Kick and Ban
     if (command == "sw_kick") then
         DropPlayer(playerId, "You have been kicked for: " .. reason)
+        if (Config.BROADCAST_ACTIONS_TO_SERVER) then
+            SendChatMessage(-1, GetPlayerName(playerId) .. " has been kicked for: " .. reason)
+        end
     elseif (command == "sw_ban") then
         DropPlayer(playerId, "You have been banned for: " .. reason .. '\nReconnect for details and appeal instructions')
-    end
-
-    -- Commend
-    if (command == "sw_commend") then
-        SendChatMessage(playerId, "You have been commended for: " .. reason)
+        if (Config.BROADCAST_ACTIONS_TO_SERVER) then
+            SendChatMessage(-1, GetPlayerName(playerId) .. " has been banned for: " .. reason)
+        end
+    elseif (command == "sw_commend") then
         TriggerClientEvent("sw:createAnnouncement", playerId, "~g~StaffWatch Commendation", "You've been commended for: " .. reason, 5000)
-    end
-
-    -- Warn
-    if (command == "sw_warn") then
-        SendChatMessage(playerId, "You have been warned for: " .. reason)
+        if (Config.BROADCAST_ACTIONS_TO_SERVER) then
+            SendChatMessage(-1, GetPlayerName(playerId) .. " has been commended for: " .. reason)
+        else
+            SendChatMessage(playerId, "You have been commended for: " .. reason)
+        end
+    elseif (command == "sw_warn") then
         TriggerClientEvent("sw:createAnnouncement", playerId, "~y~StaffWatch Warning", "You've been warned for: " .. reason, 8000)
+        if (Config.BROADCAST_ACTIONS_TO_SERVER) then
+            SendChatMessage(-1, GetPlayerName(playerId) .. " has been warned for: " .. reason)
+        else
+            SendChatMessage(playerId, "You have been warned for: " .. reason)
+        end
     end
 end
