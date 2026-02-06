@@ -77,6 +77,12 @@ function GetStreetName()
     return streetName
 end
 
+GetCombinedLocation = function()
+    local street = GetStreetName()
+    local area = GetAreaName()
+    return street .. ", " .. area
+end
+
 function GetCoordinates()
     local playerPed = GetPlayerPed(-1)
     local coord = GetEntityCoords(playerPed)

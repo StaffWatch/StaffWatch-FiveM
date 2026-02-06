@@ -1,6 +1,9 @@
 AddEventHandler("playerConnecting", function(name, _, deferrals)
     deferrals.defer()
 
+    -- Log join request
+    local origSrc = source
+
     -- Get player
     local playerDto = CreatePlayerDTO(name, source)
 
@@ -27,8 +30,10 @@ AddEventHandler("playerConnecting", function(name, _, deferrals)
     if (response.allowJoin) then
         AllowJoin(deferrals)
     elseif (response.banInfo) then
+        LogEvent("JOIN_ATTEMPT", origSrc, nil, {})
         HandleBan(deferrals, response.banInfo)
     else
+        LogEvent("JOIN_ATTEMPT", origSrc, nil, {})
         BlockJoin(deferrals)
     end
 
