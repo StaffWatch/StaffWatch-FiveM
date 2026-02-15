@@ -17,8 +17,8 @@ AddEventHandler('playerDropped', function()
 end)
 
 -- Player Death
-RegisterServerEvent('playerDied')
-AddEventHandler('playerDied',function(message, location, x, y, z, weapon)
+RegisterServerEvent('sw:playerDied')
+AddEventHandler('sw:playerDied',function(message, location, x, y, z, weapon)
     LogEvent("PLAYER_DIED", source, nil, {
         content = message,
         location = location,
@@ -29,8 +29,8 @@ AddEventHandler('playerDied',function(message, location, x, y, z, weapon)
     })
 end)
 
-RegisterServerEvent('playerDiedFromPlayer')
-AddEventHandler('playerDiedFromPlayer',function(message, killer_id, location, x, y, z, weapon)
+RegisterServerEvent('sw:playerDiedFromPlayer')
+AddEventHandler('sw:playerDiedFromPlayer',function(message, killer_id, location, x, y, z, weapon)
     LogEvent("PLAYER_KILL", killer_id, source, {
         content = message,
         location = location,
@@ -42,8 +42,8 @@ AddEventHandler('playerDiedFromPlayer',function(message, killer_id, location, x,
 end)
 
 -- Player Revived
-RegisterServerEvent('playerRespawned')
-AddEventHandler('playerRespawned',function(location, x, y, z)
+RegisterServerEvent('sw:playerRespawned')
+AddEventHandler('sw:playerRespawned',function(location, x, y, z)
     LogEvent("PLAYER_RESPAWN", source, nil, {
         location = location,
         coordinatesX = x,

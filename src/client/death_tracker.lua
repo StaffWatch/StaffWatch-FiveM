@@ -52,15 +52,15 @@ Citizen.CreateThread(function()
             end
             if byPlayer then
                 print("Player died from player: " .. message .. " by " .. KillerId)
-                TriggerServerEvent('playerDiedFromPlayer', message, KillerId, GetCombinedLocation(), coords.x, coords.y, coords.z, weaponName)
+                TriggerServerEvent('sw:playerDiedFromPlayer', message, KillerId, GetCombinedLocation(), coords.x, coords.y, coords.z, weaponName)
             else
                 print("Player died: " .. message)
-                TriggerServerEvent('playerDied', message, GetCombinedLocation(), coords.x, coords.y, coords.z, weaponName)
+                TriggerServerEvent('sw:playerDied', message, GetCombinedLocation(), coords.x, coords.y, coords.z, weaponName)
             end
             isDead = true
         end
 		if not IsEntityDead(ped) and isDead then
-            TriggerServerEvent('playerRespawned', GetCombinedLocation(), coords.x, coords.y, coords.z)
+            TriggerServerEvent('sw:playerRespawned', GetCombinedLocation(), coords.x, coords.y, coords.z)
 			isDead = false
         end
 	end
