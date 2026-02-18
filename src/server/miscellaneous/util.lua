@@ -72,8 +72,17 @@ SendAPIRequest = function(endpoint, data)
     )
 
     if (status ~= 200) then
+        -- Mask the secret in the request
+        if (data.secret) then
+            data.secret = "************"
+        end
+
         -- Log the error and return failure
-        print("API Request Failed (" .. status .. "): " .. errorData)
+        print("-------------------------------------------------------------")
+        print("API Request Failed | URL: " .. url .. " | Status: " .. status)
+        print("Request Data: " .. json.encode(data))
+        print("Error Response: " .. errorData)
+        print("-------------------------------------------------------------")
         return false, errorData
     else
         -- Log the successful response and return success
