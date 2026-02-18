@@ -15,7 +15,7 @@ function HandleCommandQueue()
   if (success) then
     local commands = json.decode(rawResponse)
     for i in pairs(commands) do
-      DebugLog("Executing command from command queue: " .. commands[i])
+      print("Executing remote command: " .. commands[i])
       ExecuteCommand(commands[i])
     end
   end
