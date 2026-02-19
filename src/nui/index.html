@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StaffWatch Menu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="m-0 bg-transparent font-sans">
+    <div id="menu" class="fixed right-4 top-1/2 hidden w-[340px] -translate-y-1/2 overflow-hidden rounded-lg border border-white/15 bg-black/85 text-neutral-100">
+        <div class="bg-white/5 px-4 py-3">
+            <h1 class="m-0 text-lg font-semibold">StaffWatch</h1>
+        </div>
+        <div class="grid grid-cols-3 gap-2 border-b border-white/10 bg-black/25 px-4 py-3">
+            <button data-tab="0" class="tab-btn rounded border border-white/15 px-2 py-2 text-sm">Self</button>
+            <button data-tab="1" class="tab-btn rounded border border-white/15 px-2 py-2 text-sm">Server</button>
+            <button data-tab="2" class="tab-btn rounded border border-white/15 px-2 py-2 text-sm">Players</button>
+        </div>
+        <div id="buttonList" class="flex flex-col gap-2 p-2"></div>
+        <div class="px-4 pb-4 text-sm text-neutral-300">
+            Use TAB and Arrow Keys to navigate the menu.
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

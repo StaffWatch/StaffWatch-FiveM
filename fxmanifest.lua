@@ -4,6 +4,7 @@ game 'gta5'
 author 'StaffWatch'
 description 'FiveM integration for the StaffWatch web panel'
 version '1.0.0'
+ui_page '/src/nui/index.html'
 
 server_scripts {
     "config.lua",
@@ -31,8 +32,11 @@ client_scripts {
     "/src/client/freeze.lua",
     "/src/client/notify.lua",
     "/src/client/live_client.lua",
+    "/src/client/menu_nui.lua",
 }
 
 files {
-    '/src/resources/announce_logo.png'
+    '/src/resources/announce_logo.png',
+    '/src/nui/index.html',
+    '/src/nui/app.js',
 }
