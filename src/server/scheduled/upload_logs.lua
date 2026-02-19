@@ -3,6 +3,27 @@ local queuedLogs = {}
 LogEvent = function(eventType, arbitratorId, targetId, opts)
     opts = opts or {}
 
+    local malformed =
+        (opts.coordinatesX ~= nil and type(opts.coordinatesX) ~= "number") or
+        (opts.coordinatesY ~= nil and type(opts.coordinatesY) ~= "number") or
+        (opts.coordinatesZ ~= nil and type(opts.coordinatesZ) ~= "number") or
+        (opts.location ~= nil and type(opts.location) ~= "string") or
+        (opts.content ~= nil and type(opts.content) ~= "string") or
+        (opts.weapon ~= nil and type(opts.weapon) ~= "string")
+
+    if malformed then
+        print("----------------------------------------------------------")
+        print("Recieved malformed log event with the following payload:")
+        print(json.encode({
+            eventType = eventType,
+            arbitratorId = arbitratorId,
+            targetId = targetId,
+            opts = opts
+        }))
+        print("----------------------------------------------------------")
+        return
+    end
+
     local log = {
         type = eventType, -- e.g. "PLAYER_JOIN", "CHAT_MESSAGE", etc.
         timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
