@@ -1,5 +1,21 @@
 local menuOpen = false
 local toggleCommandName = "swmenu"
+local godmodeEnabled = true
+
+local function applyGodmodeState()
+    local ped = PlayerPedId()
+    SetPlayerInvincible(PlayerId(), godmodeEnabled)
+    SetEntityInvincible(ped, godmodeEnabled)
+end
+
+local function syncGodmodeButtonState()
+    SendNUIMessage({
+        action = "updateMenuAction",
+        tabId = "self",
+        actionId = "toggle_godmode",
+        enabled = godmodeEnabled
+    })
+end
 
 local function setMenuState(state)
     menuOpen = state
@@ -9,6 +25,10 @@ local function setMenuState(state)
         action = "setVisible",
         visible = state
     })
+
+    if state then
+        syncGodmodeButtonState()
+    end
 end
 
 local function toggleMenu()
@@ -22,10 +42,21 @@ end)
 
 RegisterNUICallback("executeMenuAction", function(data, cb)
     local payload = data or {}
-    local tab = tostring(payload.tab or "Unknown Tab")
-    local index = tonumber(payload.index) or 0
-    local label = tostring(payload.label or "Unknown Action")
-    TriggerEvent("sw:notify", "Menu", ("[%s] Executed placeholder %d: %s"):format(tab, index, label))
+    local tabLabel = tostring(payload.tabLabel or "Unknown Tab")
+    local actionIndex = tonumber(payload.actionIndex) or 0
+    local actionId = tostring(payload.actionId or "")
+    local title = tostring(payload.title or "Unknown Action")
+
+    if actionId == "toggle_godmode" then
+        godmodeEnabled = not godmodeEnabled
+        applyGodmodeState()
+        syncGodmodeButtonState()
+        TriggerEvent("sw:notify", "Menu", ("Godmode %s"):format(godmodeEnabled and "Enabled" or "Disabled"))
+        cb({})
+        return
+    end
+
+    TriggerEvent("sw:notify", "Menu", ("[%s] Executed placeholder %d: %s"):format(tabLabel, actionIndex, title))
     cb({})
 end)
 
@@ -34,3 +65,13 @@ RegisterCommand(toggleCommandName, function()
 end, false)
 
 RegisterKeyMapping(toggleCommandName, "Open/Close StaffWatch Placeholder Menu", "keyboard", "F6")
+
+CreateThread(function()
+    while true do
+        Citizen.Wait(0)
+
+        if godmodeEnabled then
+            applyGodmodeState()
+        end
+    end
+end)

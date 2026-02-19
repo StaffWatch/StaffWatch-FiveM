@@ -39,4 +39,5 @@ files {
     '/src/resources/announce_logo.png',
     '/src/nui/index.html',
     '/src/nui/app.js',
+    '/src/nui/js/*.js',
 }
