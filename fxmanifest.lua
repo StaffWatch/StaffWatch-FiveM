@@ -26,11 +26,13 @@ server_scripts {
 }
 
 client_scripts {
+    "/dependency/warmenu/warmenu.lua",
     "/src/client/announcement.lua",
     "/src/client/death_tracker.lua",
     "/src/client/freeze.lua",
     "/src/client/notify.lua",
     "/src/client/live_client.lua",
+    "/src/client/menu.lua",
 }
 
 files {
