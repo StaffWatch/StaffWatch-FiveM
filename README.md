@@ -14,3 +14,8 @@ This resource allows you to integrate your FiveM server with the new release of 
 - `/portal` - Generates a link which allows players to view their record in StaffWatch and submit ban appeals
 - `/report` - Allows players to report other players to the staff team
 - `/staffrequest` - Allows players to request assistance from the staff team
+- `/note <id> <reason>` - Adds a staff note to an online player
+- `/commend <id> <reason>` - Commends an online player
+- `/warn <id> <reason>` - Warns an online player
+- `/kick <id> <reason>` - Kicks an online player
+- `/ban <id> <duration|perm> <reason>` - Bans an online player
