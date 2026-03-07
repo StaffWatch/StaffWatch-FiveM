@@ -6,6 +6,7 @@ description 'FiveM integration for the StaffWatch web panel'
 version '1.0.0'
 
 server_scripts {
+    "version.lua",
     "config.lua",
     "/src/server/commands/link.lua",
     "/src/server/commands/portal.lua",
