@@ -6,11 +6,13 @@ description 'FiveM integration for the StaffWatch web panel'
 version '1.0.0'
 
 server_scripts {
+    "version.lua",
     "config.lua",
     "/src/server/commands/link.lua",
     "/src/server/commands/portal.lua",
     "/src/server/commands/report_player.lua",
     "/src/server/commands/staff_request.lua",
+    "/src/server/commands/staff_actions.lua",
     "/src/server/commands/system_commands.lua",
     "/src/server/events/logging_events.lua",
     "/src/server/events/player_connecting.lua",
@@ -27,6 +29,7 @@ server_scripts {
 
 client_scripts {
     "/src/client/announcement.lua",
+    "/src/client/command_suggestions.lua",
     "/src/client/death_tracker.lua",
     "/src/client/freeze.lua",
     "/src/client/notify.lua",

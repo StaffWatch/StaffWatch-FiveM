@@ -13,6 +13,7 @@ end)
 function TryRegister()
     local success, rawResponse = SendAPIRequest("/api/register", {
         secret = Config.SECRET,
+        serverVersion = SW_RESOURCE_VERSION,
         templatedActions = Config.TEMPLATED_ACTIONS
     })
     if (success) then
