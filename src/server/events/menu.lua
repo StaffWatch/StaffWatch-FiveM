@@ -16,7 +16,8 @@ local function getStaffStatus(source)
     end
 
     local response = json.decode(rawResponse)
-    if (response == nil or response.isStaff ~= true) then
+    local isStaff = response ~= nil and (response.isStaff == true or response.staff == true)
+    if (not isStaff) then
         return false, response, nil
     end
 
