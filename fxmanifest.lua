@@ -5,6 +5,10 @@ author 'StaffWatch'
 description 'FiveM integration for the StaffWatch web panel'
 version '1.0.0'
 
+dependency 'ox_lib'
+
+shared_script '@ox_lib/init.lua'
+
 server_scripts {
     "version.lua",
     "config.lua",
@@ -25,6 +29,7 @@ server_scripts {
     "/src/server/scheduled/upload_logs.lua",
     "/src/server/scheduled/live_server.lua",
     "/src/server/events/remote_action.lua",
+    "/src/server/events/menu.lua",
 }
 
 client_scripts {
@@ -34,6 +39,7 @@ client_scripts {
     "/src/client/freeze.lua",
     "/src/client/notify.lua",
     "/src/client/live_client.lua",
+    "/src/client/menu.lua",
 }
 
 files {

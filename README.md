@@ -5,11 +5,15 @@ This resource allows you to integrate your FiveM server with the new release of 
 
 ## Installation
 - Add the resource to the `server-data/resources` folder
+- Install and ensure `ox_lib` before StaffWatch-FiveM
 - Add your server secret to the `config.lua` file
+- Grant trusted staff local tool access with `add_ace identifier.<identifier> staffwatch.localtools allow`
 - Configure any other settings within the config file
 - Restart the server, or use `refresh` and `start` commands.
 
 ## Commands
+- `/staffwatch` - Opens the StaffWatch menu
+- `/swmenu` - Opens the StaffWatch menu
 - `/link` - Generates a code which will allow staff members to link their player profile to StaffWatch
 - `/portal` - Generates a link which allows players to view their record in StaffWatch and submit ban appeals
 - `/report` - Allows players to report other players to the staff team
