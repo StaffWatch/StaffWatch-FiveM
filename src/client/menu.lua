@@ -242,86 +242,62 @@ local function setSpectate(target)
     notify("StaffWatch", "Spectating player. Select them again to stop.", "success")
 end
 
-local function openPlayerActions(target, targetLabel)
-    lib.registerContext({
-        id = "sw_player_actions_" .. target,
-        title = targetLabel,
-        menu = "sw_staff_players",
-        options = {
-            {
-                title = "Note",
-                icon = "note-sticky",
-                onSelect = function()
-                    runRemoteAction(target, targetLabel, "NOTE")
-                end
-            },
-            {
-                title = "Commend",
-                icon = "thumbs-up",
-                onSelect = function()
-                    runRemoteAction(target, targetLabel, "COMMEND")
-                end
-            },
-            {
-                title = "Warn",
-                icon = "triangle-exclamation",
-                onSelect = function()
-                    runRemoteAction(target, targetLabel, "WARN")
-                end
-            },
-            {
-                title = "Kick",
-                icon = "right-from-bracket",
-                onSelect = function()
-                    runRemoteAction(target, targetLabel, "KICK")
-                end
-            },
-            {
-                title = "Ban",
-                icon = "ban",
-                onSelect = function()
-                    runRemoteAction(target, targetLabel, "BAN")
-                end
-            },
-            {
-                title = "Teleport To Player",
-                icon = "location-dot",
-                onSelect = function()
-                    TriggerServerEvent("sw:menu:teleportToPlayer", target)
-                end
-            },
-            {
-                title = "Summon Player",
-                icon = "user-plus",
-                onSelect = function()
-                    TriggerServerEvent("sw:menu:summonPlayer", target)
-                end
-            },
-            {
-                title = "Spectate Player",
-                icon = "eye",
-                onSelect = function()
-                    setSpectate(target)
-                end
-            },
-            {
-                title = "Freeze Player",
-                icon = "snowflake",
-                onSelect = function()
-                    TriggerServerEvent("sw:menu:setFreeze", target, true)
-                end
-            },
-            {
-                title = "Unfreeze Player",
-                icon = "sun",
-                onSelect = function()
-                    TriggerServerEvent("sw:menu:setFreeze", target, false)
-                end
-            }
-        }
-    })
+local function showKeyboardMenu(id, title, parentId, options, onSelect)
+    lib.registerMenu({
+        id = id,
+        title = title,
+        position = "top-right",
+        canClose = true,
+        onClose = function(keyPressed)
+            if (keyPressed == "Backspace" and parentId ~= nil) then
+                lib.showMenu(parentId)
+            end
+        end,
+        options = options
+    }, function(selected, scrollIndex, args)
+        if (onSelect ~= nil) then
+            onSelect(args, selected, scrollIndex)
+        end
+    end)
 
-    lib.showContext("sw_player_actions_" .. target)
+    lib.showMenu(id)
+end
+
+local function openPlayerActions(target, targetLabel)
+    showKeyboardMenu("sw_player_actions_" .. target, targetLabel, "sw_staff_players", {
+        {label = "Note", icon = "note-sticky", args = {action = "note"}},
+        {label = "Commend", icon = "thumbs-up", args = {action = "commend"}},
+        {label = "Warn", icon = "triangle-exclamation", args = {action = "warn"}},
+        {label = "Kick", icon = "right-from-bracket", args = {action = "kick"}},
+        {label = "Ban", icon = "ban", args = {action = "ban"}},
+        {label = "Teleport To Player", icon = "location-dot", args = {action = "teleport"}},
+        {label = "Summon Player", icon = "user-plus", args = {action = "summon"}},
+        {label = "Spectate Player", icon = "eye", args = {action = "spectate"}},
+        {label = "Freeze Player", icon = "snowflake", args = {action = "freeze"}},
+        {label = "Unfreeze Player", icon = "sun", args = {action = "unfreeze"}}
+    }, function(args)
+        if (args.action == "note") then
+            runRemoteAction(target, targetLabel, "NOTE")
+        elseif (args.action == "commend") then
+            runRemoteAction(target, targetLabel, "COMMEND")
+        elseif (args.action == "warn") then
+            runRemoteAction(target, targetLabel, "WARN")
+        elseif (args.action == "kick") then
+            runRemoteAction(target, targetLabel, "KICK")
+        elseif (args.action == "ban") then
+            runRemoteAction(target, targetLabel, "BAN")
+        elseif (args.action == "teleport") then
+            TriggerServerEvent("sw:menu:teleportToPlayer", target)
+        elseif (args.action == "summon") then
+            TriggerServerEvent("sw:menu:summonPlayer", target)
+        elseif (args.action == "spectate") then
+            setSpectate(target)
+        elseif (args.action == "freeze") then
+            TriggerServerEvent("sw:menu:setFreeze", target, true)
+        elseif (args.action == "unfreeze") then
+            TriggerServerEvent("sw:menu:setFreeze", target, false)
+        end
+    end)
 end
 
 local function openStaffPlayers()
@@ -332,30 +308,28 @@ local function openStaffPlayers()
         local targetId = player.id
         local title = ("[%s] %s"):format(player.id, player.name)
         table.insert(options, {
-            title = title,
+            label = title,
             icon = "user",
-            arrow = true,
-            onSelect = function()
-                openPlayerActions(targetId, title)
-            end
+            args = {
+                target = targetId,
+                label = title
+            }
         })
     end
 
     if (#options == 0) then
         table.insert(options, {
-            title = "No online players",
-            disabled = true
+            label = "No online players",
+            args = {
+                empty = true
+            }
         })
     end
 
-    lib.registerContext({
-        id = "sw_staff_players",
-        title = "Online Players",
-        menu = "sw_staff_menu",
-        options = options
-    })
-
-    lib.showContext("sw_staff_players")
+    showKeyboardMenu("sw_staff_players", "Online Players", "sw_staff_menu", options, function(args)
+        if (args.empty) then return end
+        openPlayerActions(args.target, args.label)
+    end)
 end
 
 local function teleportToWaypoint()
@@ -451,131 +425,98 @@ end)
 local function openServerTools()
     if (not canUseLocalTools()) then return end
 
-    lib.registerContext({
-        id = "sw_server_tools",
-        title = "Server Tools",
-        menu = "sw_staff_menu",
-        options = {
-            {
-                title = "Announcement",
-                icon = "megaphone",
-                onSelect = function()
-                    local input = lib.inputDialog("Announcement", {
-                        {
-                            type = "textarea",
-                            label = "Message",
-                            required = true,
-                            max = 500
-                        }
-                    })
-                    if (input == nil or trim(input[1]) == nil or trim(input[1]) == "") then return end
-                    TriggerServerEvent("sw:menu:announce", trim(input[1]))
-                end
-            },
-            {
-                title = "Teleport To Waypoint",
-                icon = "map",
-                onSelect = teleportToWaypoint
-            },
-            {
-                title = "Copy Current Coordinates",
-                icon = "copy",
-                onSelect = copyCurrentCoords
-            },
-            {
-                title = noclipEnabled and "Disable Noclip" or "Enable Noclip",
-                icon = "up-down-left-right",
-                onSelect = toggleNoclip
-            }
-        }
-    })
-
-    lib.showContext("sw_server_tools")
+    showKeyboardMenu("sw_server_tools", "Server Tools", "sw_staff_menu", {
+        {label = "Announcement", icon = "megaphone", args = {action = "announcement"}},
+        {label = "Teleport To Waypoint", icon = "map", args = {action = "waypoint"}},
+        {label = "Copy Current Coordinates", icon = "copy", args = {action = "coords"}},
+        {label = noclipEnabled and "Disable Noclip" or "Enable Noclip", icon = "up-down-left-right", args = {action = "noclip"}}
+    }, function(args)
+        if (args.action == "announcement") then
+            local input = lib.inputDialog("Announcement", {
+                {
+                    type = "textarea",
+                    label = "Message",
+                    required = true,
+                    max = 500
+                }
+            })
+            if (input == nil or trim(input[1]) == nil or trim(input[1]) == "") then return end
+            TriggerServerEvent("sw:menu:announce", trim(input[1]))
+        elseif (args.action == "waypoint") then
+            teleportToWaypoint()
+        elseif (args.action == "coords") then
+            copyCurrentCoords()
+        elseif (args.action == "noclip") then
+            toggleNoclip()
+        end
+    end)
 end
 
 local function openStaffMenu()
-    lib.registerContext({
-        id = "sw_staff_menu",
-        title = "StaffWatch Staff",
-        menu = "sw_main_menu",
-        options = {
-            {
-                title = "Online Players",
-                icon = "users",
-                arrow = true,
-                onSelect = openStaffPlayers
-            },
-            {
-                title = "Server Tools",
-                icon = "wrench",
-                arrow = true,
-                onSelect = openServerTools
-            }
-        }
-    })
-
-    lib.showContext("sw_staff_menu")
+    showKeyboardMenu("sw_staff_menu", "StaffWatch Staff", "sw_main_menu", {
+        {label = "Online Players", icon = "users", args = {action = "players"}},
+        {label = "Server Tools", icon = "wrench", args = {action = "server"}}
+    }, function(args)
+        if (args.action == "players") then
+            openStaffPlayers()
+        elseif (args.action == "server") then
+            openServerTools()
+        end
+    end)
 end
 
 local function openPlayerMenu()
-    lib.registerContext({
-        id = "sw_player_menu",
-        title = "StaffWatch",
-        menu = "sw_main_menu",
-        options = {
-            {
-                title = "Request Staff",
-                icon = "hand",
-                onSelect = runPlayerRequest
-            },
-            {
-                title = "Report Player",
-                icon = "flag",
-                onSelect = runPlayerReport
-            },
-            {
-                title = "Link StaffWatch Profile",
-                icon = "link",
-                onSelect = createLinkCode
-            },
-            {
-                title = "Access Player Portal",
-                icon = "arrow-up-right-from-square",
-                onSelect = createPortalCode
-            }
-        }
-    })
-
-    lib.showContext("sw_player_menu")
+    showKeyboardMenu("sw_player_menu", "StaffWatch", "sw_main_menu", {
+        {label = "Request Staff", icon = "hand", args = {action = "request"}},
+        {label = "Report Player", icon = "flag", args = {action = "report"}},
+        {label = "Link StaffWatch Profile", icon = "link", args = {action = "link"}},
+        {label = "Access Player Portal", icon = "arrow-up-right-from-square", args = {action = "portal"}}
+    }, function(args)
+        if (args.action == "request") then
+            runPlayerRequest()
+        elseif (args.action == "report") then
+            runPlayerReport()
+        elseif (args.action == "link") then
+            createLinkCode()
+        elseif (args.action == "portal") then
+            createPortalCode()
+        end
+    end)
 end
 
 local function openMainMenu()
     local status = lib.callback.await("sw:menu:getStaffStatus", false) or {}
     local options = {
         {
-            title = "Player Menu",
+            label = "Player Menu",
             icon = "user",
-            arrow = true,
-            onSelect = openPlayerMenu
+            args = {
+                action = "player"
+            }
         }
     }
 
     table.insert(options, {
-        title = "Staff Menu",
+        label = "Staff Menu",
         description = status.isStaff and "Moderation and local staff tools" or "Link your StaffWatch staff account to unlock this menu",
         icon = "shield-halved",
-        arrow = status.isStaff == true,
-        disabled = status.isStaff ~= true,
-        onSelect = openStaffMenu
+        args = {
+            action = "staff",
+            allowed = status.isStaff == true
+        }
     })
 
-    lib.registerContext({
-        id = "sw_main_menu",
-        title = "StaffWatch",
-        options = options
-    })
-
-    lib.showContext("sw_main_menu")
+    showKeyboardMenu("sw_main_menu", "StaffWatch", nil, options, function(args)
+        if (args.action == "player") then
+            openPlayerMenu()
+        elseif (args.action == "staff") then
+            if (args.allowed) then
+                openStaffMenu()
+            else
+                notify("StaffWatch", "Link your StaffWatch staff account to unlock this menu.", "error")
+            end
+        end
+    end)
 end
 
 RegisterCommand("staffwatch", openMainMenu, false)
