@@ -624,7 +624,7 @@ local function openStaffMenu()
 end
 
 openPlayerMenu = function(parentId)
-    showKeyboardMenu("sw_player_menu", "StaffWatch", parentId, {
+    showKeyboardMenu("sw_player_menu", "Player Options", parentId, {
         {label = "Request Staff", description = "Request assistance from an online staff member", icon = "hand", iconColor = ICON_COLORS.sky, args = {action = "request"}},
         {label = "Report Player", description = "Report another player for breaking rules in-game", icon = "flag", iconColor = ICON_COLORS.amber, args = {action = "report"}},
         {
