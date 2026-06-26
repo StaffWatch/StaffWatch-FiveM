@@ -7,7 +7,6 @@ This resource allows you to integrate your FiveM server with the new release of 
 - Add the resource to the `server-data/resources` folder
 - Install and ensure `ox_lib` before StaffWatch-FiveM
 - Add your server secret to the `config.lua` file
-- Grant trusted staff local tool access with `add_ace identifier.<identifier> staffwatch.localtools allow`
 - Configure any other settings within the config file
 - Restart the server, or use `refresh` and `start` commands.
 

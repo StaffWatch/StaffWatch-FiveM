@@ -1,5 +1,3 @@
-local LOCAL_TOOLS_ACE = "staffwatch.localtools"
-
 local function getStaffStatus(source)
     local primaryIdentifier = GetPlayerPrimaryIdentifier(source)
     if (primaryIdentifier == nil) then
@@ -28,10 +26,6 @@ local function canUseLocalTools(source)
     local isStaff, staff, err = getStaffStatus(source)
     if (not isStaff) then
         return false, "You must be linked StaffWatch staff to use this."
-    end
-
-    if (not IsPlayerAceAllowed(source, LOCAL_TOOLS_ACE)) then
-        return false, "You do not have permission to use StaffWatch local tools."
     end
 
     return true, staff, err
