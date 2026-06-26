@@ -1,4 +1,5 @@
 local noclipEnabled = false
+local noclipEntity = nil
 local spectating = false
 local spectateTarget = nil
 
@@ -36,6 +37,12 @@ end
 
 local function fetchPlayers()
     return lib.callback.await("sw:menu:getPlayers", false) or {}
+end
+
+local function reopenKeyboardMenu(id)
+    Citizen.SetTimeout(100, function()
+        lib.showMenu(id)
+    end)
 end
 
 local function canUseLocalTools()
@@ -242,6 +249,13 @@ local function setSpectate(target)
     notify("StaffWatch", "Spectating player. Select them again to stop.", "success")
 end
 
+local function getNoclipEntity()
+    local ped = PlayerPedId()
+    local vehicle = GetVehiclePedIsIn(ped, false)
+    if (vehicle ~= 0) then return vehicle end
+    return ped
+end
+
 local function showKeyboardMenu(id, title, parentId, options, onSelect)
     lib.registerMenu({
         id = id,
@@ -264,17 +278,17 @@ local function showKeyboardMenu(id, title, parentId, options, onSelect)
 end
 
 local function openPlayerActions(target, targetLabel)
-    showKeyboardMenu("sw_player_actions_" .. target, targetLabel, "sw_staff_players", {
-        {label = "Note", icon = "note-sticky", args = {action = "note"}},
-        {label = "Commend", icon = "thumbs-up", args = {action = "commend"}},
-        {label = "Warn", icon = "triangle-exclamation", args = {action = "warn"}},
-        {label = "Kick", icon = "right-from-bracket", args = {action = "kick"}},
-        {label = "Ban", icon = "ban", args = {action = "ban"}},
-        {label = "Teleport To Player", icon = "location-dot", args = {action = "teleport"}},
-        {label = "Summon Player", icon = "user-plus", args = {action = "summon"}},
-        {label = "Spectate Player", icon = "eye", args = {action = "spectate"}},
-        {label = "Freeze Player", icon = "snowflake", args = {action = "freeze"}},
-        {label = "Unfreeze Player", icon = "sun", args = {action = "unfreeze"}}
+    showKeyboardMenu("sw_player_actions_" .. target, targetLabel, "sw_staff_menu", {
+        {label = "Note", description = "Add private staff context to this player's record", icon = "note-sticky", args = {action = "note"}},
+        {label = "Commend", description = "Record positive behavior for this player", icon = "thumbs-up", args = {action = "commend"}},
+        {label = "Warn", description = "Issue a formal warning and save it to StaffWatch", icon = "triangle-exclamation", args = {action = "warn"}},
+        {label = "Kick", description = "Remove this player from the server with a recorded reason", icon = "right-from-bracket", args = {action = "kick"}},
+        {label = "Ban", description = "Create a temporary or permanent StaffWatch ban", icon = "ban", args = {action = "ban"}},
+        {label = "Teleport To Player", description = "Move yourself to this player's current location", icon = "location-dot", args = {action = "teleport"}},
+        {label = "Summon Player", description = "Bring this player to your current location", icon = "user-plus", args = {action = "summon"}},
+        {label = "Spectate Player", description = "Watch this player; select again to stop", icon = "eye", args = {action = "spectate"}},
+        {label = "Freeze Player", description = "Stop this player from moving", icon = "snowflake", args = {action = "freeze"}},
+        {label = "Unfreeze Player", description = "Restore movement for this player", icon = "sun", args = {action = "unfreeze"}}
     }, function(args)
         if (args.action == "note") then
             runRemoteAction(target, targetLabel, "NOTE")
@@ -292,43 +306,12 @@ local function openPlayerActions(target, targetLabel)
             TriggerServerEvent("sw:menu:summonPlayer", target)
         elseif (args.action == "spectate") then
             setSpectate(target)
+            reopenKeyboardMenu("sw_player_actions_" .. target)
         elseif (args.action == "freeze") then
             TriggerServerEvent("sw:menu:setFreeze", target, true)
         elseif (args.action == "unfreeze") then
             TriggerServerEvent("sw:menu:setFreeze", target, false)
         end
-    end)
-end
-
-local function openStaffPlayers()
-    local players = fetchPlayers()
-    local options = {}
-
-    for _, player in ipairs(players) do
-        local targetId = player.id
-        local title = ("[%s] %s"):format(player.id, player.name)
-        table.insert(options, {
-            label = title,
-            icon = "user",
-            args = {
-                target = targetId,
-                label = title
-            }
-        })
-    end
-
-    if (#options == 0) then
-        table.insert(options, {
-            label = "No online players",
-            args = {
-                empty = true
-            }
-        })
-    end
-
-    showKeyboardMenu("sw_staff_players", "Online Players", "sw_staff_menu", options, function(args)
-        if (args.empty) then return end
-        openPlayerActions(args.target, args.label)
     end)
 end
 
@@ -381,9 +364,27 @@ local function toggleNoclip()
     noclipEnabled = not noclipEnabled
 
     local ped = PlayerPedId()
-    SetEntityCollision(ped, not noclipEnabled, not noclipEnabled)
-    FreezeEntityPosition(ped, noclipEnabled)
-    SetEntityInvincible(ped, noclipEnabled)
+    if (noclipEnabled) then
+        noclipEntity = getNoclipEntity()
+    end
+
+    local entity = noclipEntity or getNoclipEntity()
+
+    SetEntityCollision(entity, not noclipEnabled, not noclipEnabled)
+    FreezeEntityPosition(entity, noclipEnabled)
+    SetEntityInvincible(entity, noclipEnabled)
+
+    if (not noclipEnabled) then
+        SetEntityVelocity(entity, 0.0, 0.0, 0.0)
+        SetEntityCollision(entity, true, true)
+        FreezeEntityPosition(entity, false)
+        SetEntityInvincible(entity, false)
+        SetEntityCollision(ped, true, true)
+        FreezeEntityPosition(ped, false)
+        SetEntityInvincible(ped, false)
+        SetPlayerControl(PlayerId(), true, 0)
+        noclipEntity = nil
+    end
 
     notify("StaffWatch", noclipEnabled and "Noclip enabled." or "Noclip disabled.", "success")
 end
@@ -393,8 +394,8 @@ Citizen.CreateThread(function()
         if (noclipEnabled) then
             Wait(0)
 
-            local ped = PlayerPedId()
-            local coords = GetEntityCoords(ped)
+            local entity = noclipEntity or getNoclipEntity()
+            local coords = GetEntityCoords(entity)
             local forward, right = getForwardAndRightVectors()
             local speed = IsControlPressed(0, 21) and 4.0 or 1.0
 
@@ -414,8 +415,8 @@ Citizen.CreateThread(function()
             if (IsDisabledControlPressed(0, 38)) then coords = coords + vector3(0.0, 0.0, speed) end
             if (IsDisabledControlPressed(0, 44)) then coords = coords - vector3(0.0, 0.0, speed) end
 
-            SetEntityVelocity(ped, 0.0, 0.0, 0.0)
-            SetEntityCoordsNoOffset(ped, coords.x, coords.y, coords.z, true, true, true)
+            SetEntityVelocity(entity, 0.0, 0.0, 0.0)
+            SetEntityCoordsNoOffset(entity, coords.x, coords.y, coords.z, true, true, true)
         else
             Wait(500)
         end
@@ -423,13 +424,11 @@ Citizen.CreateThread(function()
 end)
 
 local function openServerTools()
-    if (not canUseLocalTools()) then return end
-
     showKeyboardMenu("sw_server_tools", "Server Tools", "sw_staff_menu", {
-        {label = "Announcement", icon = "megaphone", args = {action = "announcement"}},
-        {label = "Teleport To Waypoint", icon = "map", args = {action = "waypoint"}},
-        {label = "Copy Current Coordinates", icon = "copy", args = {action = "coords"}},
-        {label = noclipEnabled and "Disable Noclip" or "Enable Noclip", icon = "up-down-left-right", args = {action = "noclip"}}
+        {label = "Announcement", description = "Broadcast a StaffWatch announcement to the server", icon = "bullhorn", args = {action = "announcement"}},
+        {label = "Teleport To Waypoint", description = "Move yourself to your active map waypoint", icon = "map", args = {action = "waypoint"}},
+        {label = "Copy Current Coordinates", description = "Copy your current position to the clipboard", icon = "copy", args = {action = "coords"}},
+        {label = noclipEnabled and "Disable Noclip" or "Enable Noclip", description = "Toggle free movement for staff positioning", icon = "up-down-left-right", args = {action = "noclip"}}
     }, function(args)
         if (args.action == "announcement") then
             local input = lib.inputDialog("Announcement", {
@@ -448,29 +447,62 @@ local function openServerTools()
             copyCurrentCoords()
         elseif (args.action == "noclip") then
             toggleNoclip()
+            Citizen.SetTimeout(100, openServerTools)
         end
     end)
 end
 
 local function openStaffMenu()
-    showKeyboardMenu("sw_staff_menu", "StaffWatch Staff", "sw_main_menu", {
-        {label = "Online Players", icon = "users", args = {action = "players"}},
-        {label = "Server Tools", icon = "wrench", args = {action = "server"}}
-    }, function(args)
-        if (args.action == "players") then
-            openStaffPlayers()
-        elseif (args.action == "server") then
+    local options = {
+        {label = "Server Tools", description = "Announcements, noclip, waypoint teleport, and coordinates", icon = "wrench", args = {action = "server"}}
+    }
+
+    local players = fetchPlayers()
+    for _, player in ipairs(players) do
+        local title = ("[%s] %s"):format(player.id, player.name)
+        table.insert(options, {
+            label = title,
+            description = "Open moderation and staff utility actions",
+            icon = "user",
+            args = {
+                action = "player",
+                target = player.id,
+                label = title
+            }
+        })
+    end
+
+    if (#players == 0) then
+        table.insert(options, {
+            label = "No online players",
+            description = "No players are currently available to manage",
+            icon = "user-slash",
+            args = {
+                action = "empty"
+            }
+        })
+    end
+
+    showKeyboardMenu("sw_staff_menu", "StaffWatch Staff", "sw_main_menu", options, function(args)
+        if (args.action == "server") then
             openServerTools()
+        elseif (args.action == "player") then
+            openPlayerActions(args.target, args.label)
         end
     end)
 end
 
 local function openPlayerMenu()
     showKeyboardMenu("sw_player_menu", "StaffWatch", "sw_main_menu", {
-        {label = "Request Staff", icon = "hand", args = {action = "request"}},
-        {label = "Report Player", icon = "flag", args = {action = "report"}},
-        {label = "Link StaffWatch Profile", icon = "link", args = {action = "link"}},
-        {label = "Access Player Portal", icon = "arrow-up-right-from-square", args = {action = "portal"}}
+        {label = "Request Staff", description = "Request assistance from an online staff member", icon = "hand", args = {action = "request"}},
+        {label = "Report Player", description = "Report another player for breaking rules in-game", icon = "flag", args = {action = "report"}},
+        {label = "Link StaffWatch Profile", description = "For Staff Members: Generate a code to link your in-game account to StaffWatch", icon = "link", args = {action = "link"}},
+        {
+            label = "Access Player Portal",
+            description = "View action history, applications, appeals, and more",
+            icon = "arrow-up-right-from-square",
+            args = {action = "portal"}
+        }
     }, function(args)
         if (args.action == "request") then
             runPlayerRequest()
@@ -489,6 +521,7 @@ local function openMainMenu()
     local options = {
         {
             label = "Player Menu",
+            description = "Request assistance from staff or view your record",
             icon = "user",
             args = {
                 action = "player"
@@ -498,7 +531,7 @@ local function openMainMenu()
 
     table.insert(options, {
         label = "Staff Menu",
-        description = status.isStaff and "Moderation and local staff tools" or "Link your StaffWatch staff account to unlock this menu",
+        description = status.isStaff and "Moderation tools for staff members" or "Link your StaffWatch account to unlock this menu",
         icon = "shield-halved",
         args = {
             action = "staff",
