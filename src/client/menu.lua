@@ -3,6 +3,17 @@ local noclipEntity = nil
 local spectating = false
 local spectateTarget = nil
 
+local ICON_COLORS = {
+    brand = "#3b82f6",
+    sky = "#38bdf8",
+    cyan = "#22d3ee",
+    green = "#22c55e",
+    amber = "#f59e0b",
+    red = "#ef4444",
+    purple = "#a78bfa",
+    slate = "#94a3b8"
+}
+
 local function notify(title, message, type)
     lib.notify({
         title = title or "StaffWatch",
@@ -279,16 +290,16 @@ end
 
 local function openPlayerActions(target, targetLabel)
     showKeyboardMenu("sw_player_actions_" .. target, targetLabel, "sw_staff_menu", {
-        {label = "Note", description = "Add private staff context to this player's record", icon = "note-sticky", args = {action = "note"}},
-        {label = "Commend", description = "Record positive behavior for this player", icon = "thumbs-up", args = {action = "commend"}},
-        {label = "Warn", description = "Issue a formal warning and save it to StaffWatch", icon = "triangle-exclamation", args = {action = "warn"}},
-        {label = "Kick", description = "Remove this player from the server with a recorded reason", icon = "right-from-bracket", args = {action = "kick"}},
-        {label = "Ban", description = "Create a temporary or permanent StaffWatch ban", icon = "ban", args = {action = "ban"}},
-        {label = "Teleport To Player", description = "Move yourself to this player's current location", icon = "location-dot", args = {action = "teleport"}},
-        {label = "Summon Player", description = "Bring this player to your current location", icon = "user-plus", args = {action = "summon"}},
-        {label = "Spectate Player", description = "Watch this player; select again to stop", icon = "eye", args = {action = "spectate"}},
-        {label = "Freeze Player", description = "Stop this player from moving", icon = "snowflake", args = {action = "freeze"}},
-        {label = "Unfreeze Player", description = "Restore movement for this player", icon = "sun", args = {action = "unfreeze"}}
+        {label = "Note", description = "Add private staff context to this player's record", icon = "note-sticky", iconColor = ICON_COLORS.sky, args = {action = "note"}},
+        {label = "Commend", description = "Record positive behavior for this player", icon = "thumbs-up", iconColor = ICON_COLORS.green, args = {action = "commend"}},
+        {label = "Warn", description = "Issue a formal warning and save it to StaffWatch", icon = "triangle-exclamation", iconColor = ICON_COLORS.amber, args = {action = "warn"}},
+        {label = "Kick", description = "Remove this player from the server with a recorded reason", icon = "right-from-bracket", iconColor = ICON_COLORS.amber, args = {action = "kick"}},
+        {label = "Ban", description = "Create a temporary or permanent StaffWatch ban", icon = "ban", iconColor = ICON_COLORS.red, args = {action = "ban"}},
+        {label = "Teleport To Player", description = "Move yourself to this player's current location", icon = "location-dot", iconColor = ICON_COLORS.cyan, args = {action = "teleport"}},
+        {label = "Summon Player", description = "Bring this player to your current location", icon = "user-plus", iconColor = ICON_COLORS.cyan, args = {action = "summon"}},
+        {label = "Spectate Player", description = "Watch this player; select again to stop", icon = "eye", iconColor = ICON_COLORS.purple, args = {action = "spectate"}},
+        {label = "Freeze Player", description = "Stop this player from moving", icon = "snowflake", iconColor = ICON_COLORS.sky, args = {action = "freeze"}},
+        {label = "Unfreeze Player", description = "Restore movement for this player", icon = "sun", iconColor = ICON_COLORS.green, args = {action = "unfreeze"}}
     }, function(args)
         if (args.action == "note") then
             runRemoteAction(target, targetLabel, "NOTE")
@@ -425,10 +436,10 @@ end)
 
 local function openServerTools()
     showKeyboardMenu("sw_server_tools", "Server Tools", "sw_staff_menu", {
-        {label = "Announcement", description = "Broadcast a StaffWatch announcement to the server", icon = "bullhorn", args = {action = "announcement"}},
-        {label = "Teleport To Waypoint", description = "Move yourself to your active map waypoint", icon = "map", args = {action = "waypoint"}},
-        {label = "Copy Current Coordinates", description = "Copy your current position to the clipboard", icon = "copy", args = {action = "coords"}},
-        {label = noclipEnabled and "Disable Noclip" or "Enable Noclip", description = "Toggle free movement for staff positioning", icon = "up-down-left-right", args = {action = "noclip"}}
+        {label = "Announcement", description = "Broadcast a StaffWatch announcement to the server", icon = "bullhorn", iconColor = ICON_COLORS.brand, args = {action = "announcement"}},
+        {label = "Teleport To Waypoint", description = "Move yourself to your active map waypoint", icon = "map", iconColor = ICON_COLORS.cyan, args = {action = "waypoint"}},
+        {label = "Copy Current Coordinates", description = "Copy your current position to the clipboard", icon = "copy", iconColor = ICON_COLORS.sky, args = {action = "coords"}},
+        {label = noclipEnabled and "Disable Noclip" or "Enable Noclip", description = "Toggle free movement for staff positioning", icon = "up-down-left-right", iconColor = noclipEnabled and ICON_COLORS.amber or ICON_COLORS.brand, args = {action = "noclip"}}
     }, function(args)
         if (args.action == "announcement") then
             local input = lib.inputDialog("Announcement", {
@@ -454,7 +465,7 @@ end
 
 local function openStaffMenu()
     local options = {
-        {label = "Server Tools", description = "Announcements, noclip, waypoint teleport, and coordinates", icon = "wrench", args = {action = "server"}}
+        {label = "Server Tools", description = "Announcements, noclip, waypoint teleport, and coordinates", icon = "wrench", iconColor = ICON_COLORS.brand, args = {action = "server"}}
     }
 
     local players = fetchPlayers()
@@ -464,6 +475,7 @@ local function openStaffMenu()
             label = title,
             description = "Open moderation and staff utility actions",
             icon = "user",
+            iconColor = ICON_COLORS.sky,
             args = {
                 action = "player",
                 target = player.id,
@@ -477,6 +489,7 @@ local function openStaffMenu()
             label = "No online players",
             description = "No players are currently available to manage",
             icon = "user-slash",
+            iconColor = ICON_COLORS.slate,
             args = {
                 action = "empty"
             }
@@ -494,13 +507,14 @@ end
 
 local function openPlayerMenu()
     showKeyboardMenu("sw_player_menu", "StaffWatch", "sw_main_menu", {
-        {label = "Request Staff", description = "Request assistance from an online staff member", icon = "hand", args = {action = "request"}},
-        {label = "Report Player", description = "Report another player for breaking rules in-game", icon = "flag", args = {action = "report"}},
-        {label = "Link StaffWatch Profile", description = "For Staff Members: Generate a code to link your in-game account to StaffWatch", icon = "link", args = {action = "link"}},
+        {label = "Request Staff", description = "Request assistance from an online staff member", icon = "hand", iconColor = ICON_COLORS.sky, args = {action = "request"}},
+        {label = "Report Player", description = "Report another player for breaking rules in-game", icon = "flag", iconColor = ICON_COLORS.amber, args = {action = "report"}},
+        {label = "Link StaffWatch Profile", description = "For Staff Members: Generate a code to link your in-game account to StaffWatch", icon = "link", iconColor = ICON_COLORS.cyan, args = {action = "link"}},
         {
             label = "Access Player Portal",
             description = "View action history, applications, appeals, and more",
             icon = "arrow-up-right-from-square",
+            iconColor = ICON_COLORS.brand,
             args = {action = "portal"}
         }
     }, function(args)
@@ -523,6 +537,7 @@ local function openMainMenu()
             label = "Player Menu",
             description = "Request assistance from staff or view your record",
             icon = "user",
+            iconColor = ICON_COLORS.sky,
             args = {
                 action = "player"
             }
@@ -533,6 +548,7 @@ local function openMainMenu()
         label = "Staff Menu",
         description = status.isStaff and "Moderation tools for staff members" or "Link your StaffWatch account to unlock this menu",
         icon = "shield-halved",
+        iconColor = status.isStaff and ICON_COLORS.brand or ICON_COLORS.slate,
         args = {
             action = "staff",
             allowed = status.isStaff == true
