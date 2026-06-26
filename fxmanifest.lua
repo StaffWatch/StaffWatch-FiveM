@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'StaffWatch'
 description 'FiveM integration for the StaffWatch web panel'
-version '1.0.0'
+version '1.2.0'
 
 dependency 'ox_lib'
 
