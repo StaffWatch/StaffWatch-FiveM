@@ -34,9 +34,27 @@ end
 local function getPlayerList()
     local players = {}
     for _, playerId in ipairs(GetPlayers()) do
+        local primaryIdentifier = GetPlayerPrimaryIdentifier(playerId)
+        local details = nil
+
+        if (primaryIdentifier ~= nil) then
+            local success, rawResponse = SendAPIRequest("/api/player-details", {
+                secret = Config.SECRET,
+                primaryIdentifier = primaryIdentifier
+            })
+
+            if (success) then
+                details = json.decode(rawResponse)
+            end
+        end
+
         table.insert(players, {
             id = tonumber(playerId),
-            name = GetPlayerName(playerId) or ("Player " .. playerId)
+            name = GetPlayerName(playerId) or ("Player " .. playerId),
+            profileName = details ~= nil and details.name or nil,
+            trustScore = details ~= nil and details.trustScore or nil,
+            playtime = details ~= nil and details.playtime or nil,
+            firstPlayed = details ~= nil and details.firstPlayed or nil
         })
     end
     return players

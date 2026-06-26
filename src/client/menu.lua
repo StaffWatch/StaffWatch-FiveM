@@ -298,6 +298,43 @@ local function showKeyboardMenu(id, title, parentId, options, onSelect, onCheck)
     lib.showMenu(id)
 end
 
+local function formatTrustScore(trustScore)
+    if (trustScore == nil) then return "Unknown" end
+    return ("%s%%"):format(trustScore)
+end
+
+local function formatPlaytime(playtime)
+    if (playtime == nil) then return "Unknown" end
+
+    local hours = math.floor(playtime / 60)
+    local minutes = playtime % 60
+    if (hours == 0) then
+        return ("%sm"):format(minutes)
+    end
+    return ("%sh %sm"):format(hours, minutes)
+end
+
+local function formatFirstPlayed(firstPlayed)
+    if (firstPlayed == nil) then return "Unknown" end
+    return tostring(firstPlayed):sub(1, 10)
+end
+
+local function getPlayerDetailsMenuOption(player)
+    return {
+        label = "Player Profile",
+        description = "Side-scroll profile details from StaffWatch",
+        icon = "id-card",
+        iconColor = ICON_COLORS.purple,
+        values = {
+            "Trust Score: " .. formatTrustScore(player.trustScore),
+            "Playtime: " .. formatPlaytime(player.playtime),
+            "First Played: " .. formatFirstPlayed(player.firstPlayed)
+        },
+        close = false,
+        args = {action = "details"}
+    }
+end
+
 local function getSpectateMenuOption(target)
     local isSpectatingTarget = spectating and spectateTarget == target
     return {
@@ -324,8 +361,12 @@ local function getFreezeMenuOption(target)
     }
 end
 
-local function openPlayerActions(target, targetLabel)
+local function openPlayerActions(player)
+    local target = player.id
+    local targetLabel = player.label
+
     showKeyboardMenu("sw_player_actions_" .. target, targetLabel, "sw_staff_menu", {
+        getPlayerDetailsMenuOption(player),
         {label = "Add Note", description = "Add private staff context to this player's record", icon = "note-sticky", iconColor = ICON_COLORS.sky, args = {action = "note"}},
         {label = "Commend Player", description = "Record positive behavior for this player", icon = "thumbs-up", iconColor = ICON_COLORS.green, args = {action = "commend"}},
         {label = "Issue Warning", description = "Issue a formal warning and save it to StaffWatch", icon = "triangle-exclamation", iconColor = ICON_COLORS.amber, args = {action = "warn"}},
@@ -336,7 +377,9 @@ local function openPlayerActions(target, targetLabel)
         getSpectateMenuOption(target),
         getFreezeMenuOption(target)
     }, function(args)
-        if (args.action == "note") then
+        if (args.action == "details") then
+            return
+        elseif (args.action == "note") then
             runRemoteAction(target, targetLabel, "NOTE")
         elseif (args.action == "commend") then
             runRemoteAction(target, targetLabel, "COMMEND")
@@ -521,7 +564,8 @@ local function openStaffMenu()
 
     local players = fetchPlayers()
     for _, player in ipairs(players) do
-        local title = ("[%s] %s"):format(player.id, player.name)
+        local title = ("[%s] %s (%s)"):format(player.id, player.name, formatTrustScore(player.trustScore))
+        player.label = title
         table.insert(options, {
             label = title,
             description = "Open moderation and staff utility actions",
@@ -530,7 +574,7 @@ local function openStaffMenu()
             args = {
                 action = "player",
                 target = player.id,
-                label = title
+                player = player
             }
         })
     end
@@ -553,7 +597,7 @@ local function openStaffMenu()
         elseif (args.action == "server") then
             openServerTools()
         elseif (args.action == "player") then
-            openPlayerActions(args.target, args.label)
+            openPlayerActions(args.player)
         end
     end)
 end
