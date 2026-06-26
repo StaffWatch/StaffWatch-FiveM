@@ -98,6 +98,42 @@ lib.callback.register("sw:menu:getPlayerDetails", function(source, targetSource)
     }
 end)
 
+lib.callback.register("sw:menu:getPlayerCoords", function(source, targetSource)
+    local canUse, err = canUseLocalTools(source)
+    if (not canUse) then
+        return {
+            coords = nil,
+            error = err
+        }
+    end
+
+    local target, targetErr = requireOnlinePlayer(targetSource)
+    if (target == nil) then
+        return {
+            coords = nil,
+            error = targetErr
+        }
+    end
+
+    local targetPed = GetPlayerPed(target)
+    if (targetPed == 0) then
+        return {
+            coords = nil,
+            error = "Target player is not currently available."
+        }
+    end
+
+    local coords = GetEntityCoords(targetPed)
+    return {
+        coords = {
+            x = coords.x,
+            y = coords.y,
+            z = coords.z
+        },
+        error = nil
+    }
+end)
+
 lib.callback.register("sw:menu:canUseLocalTools", function(source)
     local canUse, result = canUseLocalTools(source)
     return {

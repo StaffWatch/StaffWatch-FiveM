@@ -2,6 +2,7 @@ local noclipEnabled = false
 local noclipEntity = nil
 local spectating = false
 local spectateTarget = nil
+local spectateReturnState = nil
 local frozenPlayers = {}
 local staffStatusCache = nil
 local staffStatusCheckedAt = 0
@@ -276,6 +277,122 @@ local function runRemoteAction(target, targetLabel, actionType)
     showResult(success, response, "Action Executed")
 end
 
+local function getSpectateEntity()
+    local ped = PlayerPedId()
+    local vehicle = GetVehiclePedIsIn(ped, false)
+    if (vehicle ~= 0) then return vehicle end
+    return ped
+end
+
+local function storeSpectateReturnState()
+    if (spectateReturnState ~= nil) then return end
+
+    local entity = getSpectateEntity()
+    local coords = GetEntityCoords(entity)
+    spectateReturnState = {
+        entity = entity,
+        coords = coords,
+        heading = GetEntityHeading(entity)
+    }
+end
+
+local function setSpectateEntityHidden(hidden)
+    local ped = PlayerPedId()
+    local entity = getSpectateEntity()
+
+    SetEntityVisible(entity, not hidden, false)
+    SetEntityCollision(entity, not hidden, not hidden)
+    FreezeEntityPosition(entity, hidden)
+    SetEntityInvincible(entity, hidden)
+
+    if (entity ~= ped) then
+        SetEntityVisible(ped, not hidden, false)
+        SetEntityCollision(ped, not hidden, not hidden)
+        FreezeEntityPosition(ped, hidden)
+        SetEntityInvincible(ped, hidden)
+    end
+end
+
+local function restoreSpectateReturnState()
+    local ped = PlayerPedId()
+    local entity = spectateReturnState ~= nil and spectateReturnState.entity or getSpectateEntity()
+    if (not DoesEntityExist(entity)) then
+        entity = ped
+    end
+
+    SetEntityVisible(entity, true, false)
+    SetEntityCollision(entity, true, true)
+    FreezeEntityPosition(entity, false)
+    SetEntityInvincible(entity, false)
+    SetEntityVelocity(entity, 0.0, 0.0, 0.0)
+
+    if (entity ~= ped) then
+        SetEntityVisible(ped, true, false)
+        SetEntityCollision(ped, true, true)
+        FreezeEntityPosition(ped, false)
+        SetEntityInvincible(ped, false)
+    end
+
+    if (spectateReturnState ~= nil) then
+        SetEntityCoordsNoOffset(
+            entity,
+            spectateReturnState.coords.x,
+            spectateReturnState.coords.y,
+            spectateReturnState.coords.z,
+            false,
+            false,
+            false
+        )
+        SetEntityHeading(entity, spectateReturnState.heading)
+    end
+
+    spectateReturnState = nil
+end
+
+local function getStreamedTargetPed(target)
+    local targetPlayer = GetPlayerFromServerId(target)
+    if (targetPlayer == -1) then return nil end
+
+    local targetPed = GetPlayerPed(targetPlayer)
+    if (not DoesEntityExist(targetPed)) then return nil end
+
+    return targetPed
+end
+
+local function streamInSpectateTarget(target)
+    local targetPed = getStreamedTargetPed(target)
+    if (targetPed ~= nil) then return targetPed end
+
+    local result = lib.callback.await("sw:menu:getPlayerCoords", false, target) or {}
+    if (result.coords == nil) then
+        notify("StaffWatch", result.error or "Unable to locate target player.", "error")
+        return nil
+    end
+
+    storeSpectateReturnState()
+    setSpectateEntityHidden(true)
+    SetEntityCoordsNoOffset(
+        getSpectateEntity(),
+        result.coords.x + 0.0,
+        result.coords.y + 0.0,
+        result.coords.z + 8.0,
+        false,
+        false,
+        false
+    )
+
+    local timeoutAt = GetGameTimer() + 5000
+    while (GetGameTimer() < timeoutAt) do
+        Wait(100)
+        targetPed = getStreamedTargetPed(target)
+        if (targetPed ~= nil) then return targetPed end
+    end
+
+    restoreSpectateReturnState()
+    notify("StaffWatch", "Target player could not be streamed in.", "error")
+    return nil
+end
+
 local function setSpectate(target)
     if (not canUseLocalTools()) then return end
 
@@ -284,21 +401,13 @@ local function setSpectate(target)
         spectating = false
         spectateTarget = nil
         hideSpectateTextUI()
+        restoreSpectateReturnState()
         notify("StaffWatch", "Spectate disabled.", "success")
         return
     end
 
-    local targetPlayer = GetPlayerFromServerId(target)
-    if (targetPlayer == -1) then
-        notify("StaffWatch", "Target player is not currently streamed in.", "error")
-        return
-    end
-
-    local targetPed = GetPlayerPed(targetPlayer)
-    if (not DoesEntityExist(targetPed)) then
-        notify("StaffWatch", "Target player is not currently available.", "error")
-        return
-    end
+    local targetPed = streamInSpectateTarget(target)
+    if (targetPed == nil) then return end
 
     NetworkSetInSpectatorMode(true, targetPed)
     spectating = true
@@ -335,6 +444,16 @@ Citizen.CreateThread(function()
         else
             Wait(500)
         end
+    end
+end)
+
+AddEventHandler("onClientResourceStop", function(resourceName)
+    if (resourceName ~= GetCurrentResourceName()) then return end
+
+    if (spectating) then
+        NetworkSetInSpectatorMode(false, PlayerPedId())
+        hideSpectateTextUI()
+        restoreSpectateReturnState()
     end
 end)
 
