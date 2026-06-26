@@ -33,6 +33,7 @@ server_scripts {
 }
 
 client_scripts {
+    "client_config.lua",
     "/src/client/announcement.lua",
     "/src/client/command_suggestions.lua",
     "/src/client/death_tracker.lua",

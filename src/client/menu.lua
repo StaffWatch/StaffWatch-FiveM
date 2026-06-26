@@ -47,6 +47,14 @@ local function showResult(success, response, successTitle)
     end
 end
 
+local function sendChatMessage(message)
+    TriggerEvent("chat:addMessage", {
+        color = {59, 130, 246},
+        multiline = true,
+        args = {"StaffWatch", message}
+    })
+end
+
 local function fetchPlayers()
     return lib.callback.await("sw:menu:getPlayers", false) or {}
 end
@@ -148,11 +156,17 @@ end
 local function createLinkCode()
     local success, response = lib.callback.await("sw:menu:createLinkCode", false)
     showResult(success, response, "Profile Link")
+    if (success and response ~= nil) then
+        sendChatMessage(response)
+    end
 end
 
 local function createPortalCode()
     local success, response = lib.callback.await("sw:menu:createPortalCode", false)
     showResult(success, response, "Player Portal")
+    if (success and response ~= nil) then
+        sendChatMessage(response)
+    end
 end
 
 local function confirmDangerousAction(title, message)
@@ -548,7 +562,6 @@ openPlayerMenu = function(parentId)
     showKeyboardMenu("sw_player_menu", "StaffWatch", parentId, {
         {label = "Request Staff", description = "Request assistance from an online staff member", icon = "hand", iconColor = ICON_COLORS.sky, args = {action = "request"}},
         {label = "Report Player", description = "Report another player for breaking rules in-game", icon = "flag", iconColor = ICON_COLORS.amber, args = {action = "report"}},
-        {label = "Link Staff Account", description = "For Staff Members: Generate a code to link your in-game account to StaffWatch", icon = "link", iconColor = ICON_COLORS.cyan, args = {action = "link"}},
         {
             label = "Access Player Portal",
             description = "View action history, applications, appeals, and more",
@@ -556,7 +569,8 @@ openPlayerMenu = function(parentId)
             iconColor = ICON_COLORS.brand,
             args = {action = "portal"}
         },
-        {label = "Refresh Permissions", description = "Re-check your linked StaffWatch staff access", icon = "rotate", iconColor = ICON_COLORS.brand, args = {action = "refresh"}}
+        {label = "Link Staff Account", description = "For Staff Members: Generate a code to link your in-game account to StaffWatch", icon = "link", iconColor = ICON_COLORS.cyan, args = {action = "link"}},
+        {label = "Refresh Permissions", description = "For Staff Members: Re-check your linked StaffWatch staff access", icon = "rotate", iconColor = ICON_COLORS.brand, args = {action = "refresh"}}
     }, function(args)
         if (args.action == "refresh") then
             local status = lib.callback.await("sw:menu:getStaffStatus", false) or {}
@@ -593,6 +607,6 @@ RegisterCommand("swmenu", openMainMenu, false)
 lib.addKeybind({
     name = "staffwatch_menu",
     description = "Open StaffWatch menu",
-    defaultKey = "F7",
+    defaultKey = Config.MENU_KEYBIND or "F7",
     onPressed = openMainMenu
 })
