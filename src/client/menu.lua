@@ -3,6 +3,9 @@ local noclipEntity = nil
 local spectating = false
 local spectateTarget = nil
 local frozenPlayers = {}
+local staffStatusCache = nil
+local staffStatusCheckedAt = 0
+local STAFF_STATUS_CACHE_MS = 5 * 60 * 1000
 
 local ICON_COLORS = {
     brand = "#3b82f6",
@@ -57,6 +60,18 @@ end
 
 local function fetchPlayers()
     return lib.callback.await("sw:menu:getPlayers", false) or {}
+end
+
+local function getStaffStatus(forceRefresh)
+    local now = GetGameTimer()
+    local cacheExpired = staffStatusCache == nil or (now - staffStatusCheckedAt) > STAFF_STATUS_CACHE_MS
+
+    if (forceRefresh or cacheExpired) then
+        staffStatusCache = lib.callback.await("sw:menu:getStaffStatus", false) or {}
+        staffStatusCheckedAt = now
+    end
+
+    return staffStatusCache
 end
 
 local function canUseLocalTools()
@@ -364,9 +379,15 @@ end
 local function openPlayerActions(player)
     local target = player.id
     local targetLabel = player.label
+    local result = lib.callback.await("sw:menu:getPlayerDetails", false, target) or {}
+    local details = result.details
+    if (details == nil) then
+        notify("StaffWatch", result.error or "Unable to load player profile details.", "error")
+        details = {}
+    end
 
     showKeyboardMenu("sw_player_actions_" .. target, targetLabel, "sw_staff_menu", {
-        getPlayerDetailsMenuOption(player),
+        getPlayerDetailsMenuOption(details),
         {label = "Add Note", description = "Add private staff context to this player's record", icon = "note-sticky", iconColor = ICON_COLORS.sky, args = {action = "note"}},
         {label = "Commend Player", description = "Record positive behavior for this player", icon = "thumbs-up", iconColor = ICON_COLORS.green, args = {action = "commend"}},
         {label = "Issue Warning", description = "Issue a formal warning and save it to StaffWatch", icon = "triangle-exclamation", iconColor = ICON_COLORS.amber, args = {action = "warn"}},
@@ -564,7 +585,7 @@ local function openStaffMenu()
 
     local players = fetchPlayers()
     for _, player in ipairs(players) do
-        local title = ("[%s] %s (%s)"):format(player.id, player.name, formatTrustScore(player.trustScore))
+        local title = ("[%s] %s"):format(player.id, player.name)
         player.label = title
         table.insert(options, {
             label = title,
@@ -591,7 +612,7 @@ local function openStaffMenu()
         })
     end
 
-    showKeyboardMenu("sw_staff_menu", "StaffWatch Staff", nil, options, function(args)
+    showKeyboardMenu("sw_staff_menu", "StaffWatch Menu", nil, options, function(args)
         if (args.action == "playerMenu") then
             openPlayerMenu("sw_staff_menu")
         elseif (args.action == "server") then
@@ -617,7 +638,7 @@ openPlayerMenu = function(parentId)
         {label = "Refresh Permissions", description = "For Staff Members: Re-check your linked StaffWatch staff access", icon = "rotate", iconColor = ICON_COLORS.brand, args = {action = "refresh"}}
     }, function(args)
         if (args.action == "refresh") then
-            local status = lib.callback.await("sw:menu:getStaffStatus", false) or {}
+            local status = getStaffStatus(true)
             if (status.isStaff == true) then
                 notify("StaffWatch", "Staff permissions refreshed.", "success")
                 openStaffMenu()
@@ -637,7 +658,7 @@ openPlayerMenu = function(parentId)
 end
 
 local function openMainMenu()
-    local status = lib.callback.await("sw:menu:getStaffStatus", false) or {}
+    local status = getStaffStatus(false)
     if (status.isStaff == true) then
         openStaffMenu()
     else

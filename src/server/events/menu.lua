@@ -34,27 +34,9 @@ end
 local function getPlayerList()
     local players = {}
     for _, playerId in ipairs(GetPlayers()) do
-        local primaryIdentifier = GetPlayerPrimaryIdentifier(playerId)
-        local details = nil
-
-        if (primaryIdentifier ~= nil) then
-            local success, rawResponse = SendAPIRequest("/api/player-details", {
-                secret = Config.SECRET,
-                primaryIdentifier = primaryIdentifier
-            })
-
-            if (success) then
-                details = json.decode(rawResponse)
-            end
-        end
-
         table.insert(players, {
             id = tonumber(playerId),
-            name = GetPlayerName(playerId) or ("Player " .. playerId),
-            profileName = details ~= nil and details.name or nil,
-            trustScore = details ~= nil and details.trustScore or nil,
-            playtime = details ~= nil and details.playtime or nil,
-            firstPlayed = details ~= nil and details.firstPlayed or nil
+            name = GetPlayerName(playerId) or ("Player " .. playerId)
         })
     end
     return players
@@ -79,6 +61,41 @@ end)
 
 lib.callback.register("sw:menu:getPlayers", function()
     return getPlayerList()
+end)
+
+lib.callback.register("sw:menu:getPlayerDetails", function(source, targetSource)
+    local target, targetErr = requireOnlinePlayer(targetSource)
+    if (target == nil) then
+        return {
+            details = nil,
+            error = targetErr
+        }
+    end
+
+    local primaryIdentifier = GetPlayerPrimaryIdentifier(target)
+    if (primaryIdentifier == nil) then
+        return {
+            details = nil,
+            error = "No primary ID found for player."
+        }
+    end
+
+    local success, rawResponse = SendAPIRequest("/api/player-details", {
+        secret = Config.SECRET,
+        primaryIdentifier = primaryIdentifier
+    })
+
+    if (not success) then
+        return {
+            details = nil,
+            error = rawResponse
+        }
+    end
+
+    return {
+        details = json.decode(rawResponse),
+        error = nil
+    }
 end)
 
 lib.callback.register("sw:menu:canUseLocalTools", function(source)
