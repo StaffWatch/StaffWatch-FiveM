@@ -8,6 +8,7 @@ local staffStatusCache = nil
 local staffStatusCheckedAt = 0
 local STAFF_STATUS_CACHE_MS = 5 * 60 * 1000
 local SPECTATE_TEXT_UI = "Spectating player - use StaffWatch menu to stop"
+local NOCLIP_TEXT_UI = "Noclip: WASD move | E up | Q down | Shift faster"
 
 local ICON_COLORS = {
     brand = "#3b82f6",
@@ -76,6 +77,26 @@ end
 local function hideSpectateTextUI()
     local isOpen, text = lib.isTextUIOpen()
     if (isOpen and text == SPECTATE_TEXT_UI) then
+        lib.hideTextUI()
+    end
+end
+
+local function showNoclipTextUI()
+    lib.showTextUI(NOCLIP_TEXT_UI, {
+        position = "top-center",
+        icon = "up-down-left-right",
+        iconColor = ICON_COLORS.brand,
+        style = {
+            borderRadius = 4,
+            backgroundColor = "#111827",
+            color = "#f8fafc"
+        }
+    })
+end
+
+local function hideNoclipTextUI()
+    local isOpen, text = lib.isTextUIOpen()
+    if (isOpen and text == NOCLIP_TEXT_UI) then
         lib.hideTextUI()
     end
 end
@@ -643,14 +664,15 @@ local function getForwardAndRightVectors()
     return forward, right
 end
 
-local function toggleNoclip()
-    if (not canUseLocalTools()) then return end
+local function setNoclipEnabled(enabled, silent)
+    if (enabled == true and not canUseLocalTools()) then return end
 
-    noclipEnabled = not noclipEnabled
+    noclipEnabled = enabled == true
 
     local ped = PlayerPedId()
     if (noclipEnabled) then
         noclipEntity = getNoclipEntity()
+        showNoclipTextUI()
     end
 
     local entity = noclipEntity or getNoclipEntity()
@@ -669,10 +691,21 @@ local function toggleNoclip()
         SetEntityInvincible(ped, false)
         SetPlayerControl(PlayerId(), true, 0)
         noclipEntity = nil
+        hideNoclipTextUI()
     end
 
-    notify("StaffWatch", noclipEnabled and "Noclip enabled." or "Noclip disabled.", "success")
+    if (not silent) then
+        notify("StaffWatch", noclipEnabled and "Noclip enabled." or "Noclip disabled.", "success")
+    end
 end
+
+AddEventHandler("onClientResourceStop", function(resourceName)
+    if (resourceName ~= GetCurrentResourceName()) then return end
+
+    if (noclipEnabled) then
+        setNoclipEnabled(false, true)
+    end
+end)
 
 Citizen.CreateThread(function()
     while true do
@@ -710,10 +743,11 @@ end)
 
 local function getNoclipMenuOption()
     return {
-        label = noclipEnabled and "Disable Noclip" or "Enable Noclip",
-        description = "Toggle free movement for staff positioning",
+        label = "Noclip",
+        description = noclipEnabled and "Uncheck to disable free movement" or "Check to enable free movement for staff positioning",
         icon = "up-down-left-right",
         iconColor = noclipEnabled and ICON_COLORS.amber or ICON_COLORS.brand,
+        checked = noclipEnabled,
         close = false,
         args = {action = "noclip"}
     }
@@ -741,9 +775,11 @@ local function openServerTools()
             teleportToWaypoint()
         elseif (args.action == "coords") then
             copyCurrentCoords()
-        elseif (args.action == "noclip") then
-            toggleNoclip()
-            lib.setMenuOptions("sw_server_tools", getNoclipMenuOption(), 4)
+        end
+    end, function(selected, checked, args)
+        if (args.action == "noclip") then
+            setNoclipEnabled(checked)
+            lib.setMenuOptions("sw_server_tools", getNoclipMenuOption(), selected)
         end
     end)
 end
