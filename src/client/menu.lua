@@ -2,6 +2,7 @@ local noclipEnabled = false
 local noclipEntity = nil
 local spectating = false
 local spectateTarget = nil
+local frozenPlayers = {}
 
 local ICON_COLORS = {
     brand = "#3b82f6",
@@ -48,12 +49,6 @@ end
 
 local function fetchPlayers()
     return lib.callback.await("sw:menu:getPlayers", false) or {}
-end
-
-local function reopenKeyboardMenu(id)
-    Citizen.SetTimeout(100, function()
-        lib.showMenu(id)
-    end)
 end
 
 local function canUseLocalTools()
@@ -267,7 +262,7 @@ local function getNoclipEntity()
     return ped
 end
 
-local function showKeyboardMenu(id, title, parentId, options, onSelect)
+local function showKeyboardMenu(id, title, parentId, options, onSelect, onCheck)
     lib.registerMenu({
         id = id,
         title = title,
@@ -278,6 +273,7 @@ local function showKeyboardMenu(id, title, parentId, options, onSelect)
                 lib.showMenu(parentId)
             end
         end,
+        onCheck = onCheck,
         options = options
     }, function(selected, scrollIndex, args)
         if (onSelect ~= nil) then
@@ -288,9 +284,33 @@ local function showKeyboardMenu(id, title, parentId, options, onSelect)
     lib.showMenu(id)
 end
 
-local function openPlayerActions(target, targetLabel)
+local function getSpectateMenuOption(target)
     local isSpectatingTarget = spectating and spectateTarget == target
+    return {
+        label = "Spectate Player",
+        description = "Watch this player from their point of view",
+        icon = "eye",
+        iconColor = ICON_COLORS.purple,
+        checked = isSpectatingTarget,
+        close = false,
+        args = {action = "spectate"}
+    }
+end
 
+local function getFreezeMenuOption(target)
+    local isFrozen = frozenPlayers[target] == true
+    return {
+        label = "Freeze Player",
+        description = isFrozen and "Uncheck to restore movement for this player" or "Check to stop this player from moving",
+        icon = "snowflake",
+        iconColor = isFrozen and ICON_COLORS.sky or ICON_COLORS.slate,
+        checked = isFrozen,
+        close = false,
+        args = {action = "freeze"}
+    }
+end
+
+local function openPlayerActions(target, targetLabel)
     showKeyboardMenu("sw_player_actions_" .. target, targetLabel, "sw_staff_menu", {
         {label = "Add Note", description = "Add private staff context to this player's record", icon = "note-sticky", iconColor = ICON_COLORS.sky, args = {action = "note"}},
         {label = "Commend Player", description = "Record positive behavior for this player", icon = "thumbs-up", iconColor = ICON_COLORS.green, args = {action = "commend"}},
@@ -299,9 +319,8 @@ local function openPlayerActions(target, targetLabel)
         {label = "Ban Player", description = "Create a temporary or permanent StaffWatch ban", icon = "ban", iconColor = ICON_COLORS.red, args = {action = "ban"}},
         {label = "Teleport To Player", description = "Move yourself to this player's current location", icon = "location-dot", iconColor = ICON_COLORS.cyan, args = {action = "teleport"}},
         {label = "Summon Player", description = "Bring this player to your current location", icon = "user-plus", iconColor = ICON_COLORS.cyan, args = {action = "summon"}},
-        {label = isSpectatingTarget and "Stop Spectating" or "Spectate Player", description = isSpectatingTarget and "Return to your own view" or "Watch this player; select again to stop", icon = isSpectatingTarget and "eye-slash" or "eye", iconColor = ICON_COLORS.purple, args = {action = "spectate"}},
-        {label = "Freeze Player", description = "Stop this player from moving", icon = "snowflake", iconColor = ICON_COLORS.sky, args = {action = "freeze"}},
-        {label = "Unfreeze Player", description = "Restore movement for this player", icon = "sun", iconColor = ICON_COLORS.green, args = {action = "unfreeze"}}
+        getSpectateMenuOption(target),
+        getFreezeMenuOption(target)
     }, function(args)
         if (args.action == "note") then
             runRemoteAction(target, targetLabel, "NOTE")
@@ -317,13 +336,15 @@ local function openPlayerActions(target, targetLabel)
             TriggerServerEvent("sw:menu:teleportToPlayer", target)
         elseif (args.action == "summon") then
             TriggerServerEvent("sw:menu:summonPlayer", target)
-        elseif (args.action == "spectate") then
+        end
+    end, function(selected, checked, args)
+        if (args.action == "spectate") then
             setSpectate(target)
-            reopenKeyboardMenu("sw_player_actions_" .. target)
+            lib.setMenuOptions("sw_player_actions_" .. target, getSpectateMenuOption(target), selected)
         elseif (args.action == "freeze") then
-            TriggerServerEvent("sw:menu:setFreeze", target, true)
-        elseif (args.action == "unfreeze") then
-            TriggerServerEvent("sw:menu:setFreeze", target, false)
+            frozenPlayers[target] = checked == true
+            TriggerServerEvent("sw:menu:setFreeze", target, frozenPlayers[target])
+            lib.setMenuOptions("sw_player_actions_" .. target, getFreezeMenuOption(target), selected)
         end
     end)
 end
@@ -436,12 +457,23 @@ Citizen.CreateThread(function()
     end
 end)
 
+local function getNoclipMenuOption()
+    return {
+        label = noclipEnabled and "Disable Noclip" or "Enable Noclip",
+        description = "Toggle free movement for staff positioning",
+        icon = "up-down-left-right",
+        iconColor = noclipEnabled and ICON_COLORS.amber or ICON_COLORS.brand,
+        close = false,
+        args = {action = "noclip"}
+    }
+end
+
 local function openServerTools()
     showKeyboardMenu("sw_server_tools", "Server Tools", "sw_staff_menu", {
         {label = "Send Announcement", description = "Broadcast a StaffWatch announcement to the server", icon = "bullhorn", iconColor = ICON_COLORS.brand, args = {action = "announcement"}},
         {label = "Teleport To Waypoint", description = "Move yourself to your active map waypoint", icon = "map", iconColor = ICON_COLORS.cyan, args = {action = "waypoint"}},
         {label = "Copy Current Coordinates", description = "Copy your current position to the clipboard", icon = "copy", iconColor = ICON_COLORS.sky, args = {action = "coords"}},
-        {label = noclipEnabled and "Disable Noclip" or "Enable Noclip", description = "Toggle free movement for staff positioning", icon = "up-down-left-right", iconColor = noclipEnabled and ICON_COLORS.amber or ICON_COLORS.brand, args = {action = "noclip"}}
+        getNoclipMenuOption()
     }, function(args)
         if (args.action == "announcement") then
             local input = lib.inputDialog("Announcement", {
@@ -460,7 +492,7 @@ local function openServerTools()
             copyCurrentCoords()
         elseif (args.action == "noclip") then
             toggleNoclip()
-            Citizen.SetTimeout(100, openServerTools)
+            lib.setMenuOptions("sw_server_tools", getNoclipMenuOption(), 4)
         end
     end)
 end
