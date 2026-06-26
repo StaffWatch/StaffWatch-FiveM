@@ -6,6 +6,7 @@ local frozenPlayers = {}
 local staffStatusCache = nil
 local staffStatusCheckedAt = 0
 local STAFF_STATUS_CACHE_MS = 5 * 60 * 1000
+local SPECTATE_TEXT_UI = "Spectating player - use StaffWatch menu to stop"
 
 local ICON_COLORS = {
     brand = "#3b82f6",
@@ -56,6 +57,26 @@ local function sendChatMessage(message)
         multiline = true,
         args = {"StaffWatch", message}
     })
+end
+
+local function showSpectateTextUI()
+    lib.showTextUI(SPECTATE_TEXT_UI, {
+        position = "top-center",
+        icon = "eye",
+        iconColor = ICON_COLORS.purple,
+        style = {
+            borderRadius = 4,
+            backgroundColor = "#111827",
+            color = "#f8fafc"
+        }
+    })
+end
+
+local function hideSpectateTextUI()
+    local isOpen, text = lib.isTextUIOpen()
+    if (isOpen and text == SPECTATE_TEXT_UI) then
+        lib.hideTextUI()
+    end
 end
 
 local function fetchPlayers()
@@ -262,6 +283,7 @@ local function setSpectate(target)
         NetworkSetInSpectatorMode(false, PlayerPedId())
         spectating = false
         spectateTarget = nil
+        hideSpectateTextUI()
         notify("StaffWatch", "Spectate disabled.", "success")
         return
     end
@@ -281,8 +303,40 @@ local function setSpectate(target)
     NetworkSetInSpectatorMode(true, targetPed)
     spectating = true
     spectateTarget = target
+    showSpectateTextUI()
     notify("StaffWatch", "Spectating player. Select them again to stop.", "success")
 end
+
+Citizen.CreateThread(function()
+    while true do
+        if (spectating) then
+            Wait(0)
+
+            DisableControlAction(0, 24, true)
+            DisableControlAction(0, 25, true)
+            DisableControlAction(0, 30, true)
+            DisableControlAction(0, 31, true)
+            DisableControlAction(0, 32, true)
+            DisableControlAction(0, 33, true)
+            DisableControlAction(0, 34, true)
+            DisableControlAction(0, 35, true)
+            DisableControlAction(0, 44, true)
+            DisableControlAction(0, 45, true)
+            DisableControlAction(0, 68, true)
+            DisableControlAction(0, 69, true)
+            DisableControlAction(0, 70, true)
+            DisableControlAction(0, 75, true)
+            DisableControlAction(0, 140, true)
+            DisableControlAction(0, 141, true)
+            DisableControlAction(0, 142, true)
+            DisableControlAction(0, 257, true)
+            DisableControlAction(0, 263, true)
+            DisableControlAction(0, 264, true)
+        else
+            Wait(500)
+        end
+    end
+end)
 
 local function getNoclipEntity()
     local ped = PlayerPedId()
