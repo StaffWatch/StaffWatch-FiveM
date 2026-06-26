@@ -497,8 +497,11 @@ local function openServerTools()
     end)
 end
 
+local openPlayerMenu
+
 local function openStaffMenu()
     local options = {
+        {label = "Player Menu", description = "Open player-facing StaffWatch tools and portal access", icon = "id-card", iconColor = ICON_COLORS.sky, args = {action = "playerMenu"}},
         {label = "Server Tools", description = "Announcements, noclip, waypoint teleport, and coordinates", icon = "wrench", iconColor = ICON_COLORS.brand, args = {action = "server"}}
     }
 
@@ -530,8 +533,10 @@ local function openStaffMenu()
         })
     end
 
-    showKeyboardMenu("sw_staff_menu", "StaffWatch Staff", "sw_main_menu", options, function(args)
-        if (args.action == "server") then
+    showKeyboardMenu("sw_staff_menu", "StaffWatch Staff", nil, options, function(args)
+        if (args.action == "playerMenu") then
+            openPlayerMenu("sw_staff_menu")
+        elseif (args.action == "server") then
             openServerTools()
         elseif (args.action == "player") then
             openPlayerActions(args.target, args.label)
@@ -539,8 +544,8 @@ local function openStaffMenu()
     end)
 end
 
-local function openPlayerMenu()
-    showKeyboardMenu("sw_player_menu", "StaffWatch", "sw_main_menu", {
+openPlayerMenu = function(parentId)
+    showKeyboardMenu("sw_player_menu", "StaffWatch", parentId, {
         {label = "Request Staff", description = "Request assistance from an online staff member", icon = "hand", iconColor = ICON_COLORS.sky, args = {action = "request"}},
         {label = "Report Player", description = "Report another player for breaking rules in-game", icon = "flag", iconColor = ICON_COLORS.amber, args = {action = "report"}},
         {label = "Link Staff Account", description = "For Staff Members: Generate a code to link your in-game account to StaffWatch", icon = "link", iconColor = ICON_COLORS.cyan, args = {action = "link"}},
@@ -550,9 +555,18 @@ local function openPlayerMenu()
             icon = "arrow-up-right-from-square",
             iconColor = ICON_COLORS.brand,
             args = {action = "portal"}
-        }
+        },
+        {label = "Refresh Permissions", description = "Re-check your linked StaffWatch staff access", icon = "rotate", iconColor = ICON_COLORS.brand, args = {action = "refresh"}}
     }, function(args)
-        if (args.action == "request") then
+        if (args.action == "refresh") then
+            local status = lib.callback.await("sw:menu:getStaffStatus", false) or {}
+            if (status.isStaff == true) then
+                notify("StaffWatch", "Staff permissions refreshed.", "success")
+                openStaffMenu()
+            else
+                notify("StaffWatch", "No staff permissions found yet.", "inform")
+            end
+        elseif (args.action == "request") then
             runPlayerRequest()
         elseif (args.action == "report") then
             runPlayerReport()
@@ -566,40 +580,11 @@ end
 
 local function openMainMenu()
     local status = lib.callback.await("sw:menu:getStaffStatus", false) or {}
-    local options = {
-        {
-            label = "Player Tools",
-            description = "Request assistance from staff or view your record",
-            icon = "user",
-            iconColor = ICON_COLORS.sky,
-            args = {
-                action = "player"
-            }
-        }
-    }
-
-    table.insert(options, {
-        label = "Staff Tools",
-        description = status.isStaff and "Moderation tools for staff members" or "Link your StaffWatch account to unlock this menu",
-        icon = "shield-halved",
-        iconColor = status.isStaff and ICON_COLORS.brand or ICON_COLORS.slate,
-        args = {
-            action = "staff",
-            allowed = status.isStaff == true
-        }
-    })
-
-    showKeyboardMenu("sw_main_menu", "StaffWatch", nil, options, function(args)
-        if (args.action == "player") then
-            openPlayerMenu()
-        elseif (args.action == "staff") then
-            if (args.allowed) then
-                openStaffMenu()
-            else
-                notify("StaffWatch", "Link your StaffWatch staff account to unlock this menu.", "error")
-            end
-        end
-    end)
+    if (status.isStaff == true) then
+        openStaffMenu()
+    else
+        openPlayerMenu(nil)
+    end
 end
 
 RegisterCommand("staffwatch", openMainMenu, false)
