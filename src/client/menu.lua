@@ -750,10 +750,36 @@ end
 
 local openPlayerMenu
 
+local function openPlayerById()
+    local input = lib.inputDialog("Find Player By ID", {
+        {
+            type = "number",
+            label = "Server ID",
+            required = true,
+            min = 1
+        }
+    })
+
+    if (input == nil) then return end
+
+    local target = tonumber(input[1])
+    local players = fetchPlayers()
+    for _, player in ipairs(players) do
+        if (player.id == target) then
+            player.label = ("[%s] %s"):format(player.id, player.name)
+            openPlayerActions(player)
+            return
+        end
+    end
+
+    notify("StaffWatch", "No online player found with that ID.", "error")
+end
+
 local function openStaffMenu()
     local options = {
         {label = "Player Menu", description = "Open player-facing StaffWatch tools and portal access", icon = "id-card", iconColor = ICON_COLORS.sky, args = {action = "playerMenu"}},
-        {label = "Server Tools", description = "Announcements, noclip, waypoint teleport, and coordinates", icon = "wrench", iconColor = ICON_COLORS.brand, args = {action = "server"}}
+        {label = "Server Tools", description = "Announcements, noclip, waypoint teleport, and coordinates", icon = "wrench", iconColor = ICON_COLORS.brand, args = {action = "server"}},
+        {label = "Find Player By ID", description = "Open a player action menu by server ID", icon = "magnifying-glass", iconColor = ICON_COLORS.cyan, args = {action = "findPlayer"}}
     }
 
     local players = fetchPlayers()
@@ -790,6 +816,8 @@ local function openStaffMenu()
             openPlayerMenu("sw_staff_menu")
         elseif (args.action == "server") then
             openServerTools()
+        elseif (args.action == "findPlayer") then
+            openPlayerById()
         elseif (args.action == "player") then
             openPlayerActions(args.player)
         end
