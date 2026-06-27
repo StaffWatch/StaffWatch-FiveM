@@ -61,6 +61,11 @@ local function getPlayerList()
             name = GetPlayerName(playerId) or ("Player " .. playerId)
         })
     end
+
+    table.sort(players, function(a, b)
+        return a.id < b.id
+    end)
+
     return players
 end
 
