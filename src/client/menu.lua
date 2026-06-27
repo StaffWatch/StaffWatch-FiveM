@@ -139,7 +139,6 @@ local function buildPlayerOptions(players, excludeSelf)
         end
     end
 
-    if (#options == 1) then return nil end
     return options
 end
 
@@ -268,6 +267,7 @@ local function getRuleOptions()
         end
     end
 
+    if (#options == 1) then return nil end
     return options
 end
 
