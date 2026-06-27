@@ -670,6 +670,71 @@ local function copyProfileLink(target)
     notify("StaffWatch", "Profile link copied.", "success")
 end
 
+local function formatActionDate(value)
+    if (value == nil) then return "Unknown date" end
+    return tostring(value):sub(1, 10)
+end
+
+local function buildActionDescription(action)
+    local parts = {
+        "Reason: " .. (action.reason or "Unknown"),
+        "Staff: " .. (action.staffName or "Unknown"),
+        "Date: " .. formatActionDate(action.createdDate)
+    }
+
+    if (action.expirationDate ~= nil) then
+        table.insert(parts, "Expires: " .. formatActionDate(action.expirationDate))
+    end
+
+    if (action.deactivated == true) then
+        table.insert(parts, "Status: Deactivated")
+    end
+
+    if (action.rules ~= nil and #action.rules > 0) then
+        table.insert(parts, "Rules: " .. table.concat(action.rules, ", "))
+    end
+
+    return table.concat(parts, "\n")
+end
+
+local function getActionIcon(actionType)
+    if (actionType == "BAN") then return "ban", ICON_COLORS.red end
+    if (actionType == "KICK") then return "right-from-bracket", ICON_COLORS.amber end
+    if (actionType == "WARN") then return "triangle-exclamation", ICON_COLORS.amber end
+    if (actionType == "COMMEND") then return "thumbs-up", ICON_COLORS.green end
+    return "note-sticky", ICON_COLORS.sky
+end
+
+local function openActionHistory(target, targetLabel)
+    local result = lib.callback.await("sw:menu:getActionHistory", false, target) or {}
+    local actions = result.actions or {}
+    local options = {}
+
+    if (#actions == 0) then
+        table.insert(options, {
+            label = "No action history",
+            description = result.error or "This player has no recorded actions.",
+            icon = "clock-rotate-left",
+            iconColor = ICON_COLORS.slate,
+            args = {action = "empty"}
+        })
+    else
+        for _, action in ipairs(actions) do
+            local icon, iconColor = getActionIcon(action.type)
+            table.insert(options, {
+                label = ("%s - %s"):format(action.type or "ACTION", formatActionDate(action.createdDate)),
+                description = buildActionDescription(action),
+                icon = icon,
+                iconColor = iconColor,
+                args = {action = "history"}
+            })
+        end
+    end
+
+    showKeyboardMenu("sw_action_history_" .. target, "Action History", "sw_player_actions_" .. target, options, function()
+    end)
+end
+
 local function openPlayerActions(player)
     local target = player.id
     local targetLabel = player.label
@@ -682,6 +747,7 @@ local function openPlayerActions(player)
 
     showKeyboardMenu("sw_player_actions_" .. target, targetLabel, "sw_staff_menu", {
         getPlayerDetailsMenuOption(details),
+        {label = "Action History", description = "View this player's previous StaffWatch actions", icon = "clock-rotate-left", iconColor = ICON_COLORS.brand, args = {action = "history"}},
         {label = "Add Note", description = "Add private staff context to this player's record", icon = "note-sticky", iconColor = ICON_COLORS.sky, args = {action = "note"}},
         {label = "Commend Player", description = "Record positive behavior for this player", icon = "thumbs-up", iconColor = ICON_COLORS.green, args = {action = "commend"}},
         {label = "Issue Warning", description = "Issue a formal warning and save it to StaffWatch", icon = "triangle-exclamation", iconColor = ICON_COLORS.amber, args = {action = "warn"}},
@@ -695,6 +761,8 @@ local function openPlayerActions(player)
     }, function(args)
         if (args.action == "details") then
             return
+        elseif (args.action == "history") then
+            openActionHistory(target, targetLabel)
         elseif (args.action == "note") then
             runRemoteAction(target, targetLabel, "NOTE")
         elseif (args.action == "commend") then

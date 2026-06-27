@@ -279,6 +279,42 @@ lib.callback.register("sw:menu:getProfileLink", function(source, targetSource)
     }
 end)
 
+lib.callback.register("sw:menu:getActionHistory", function(source, targetSource)
+    local canUse, err = canUseLocalTools(source)
+    if (not canUse) then
+        return {
+            actions = {},
+            error = err
+        }
+    end
+
+    local target, targetErr = requireOnlinePlayer(targetSource)
+    if (target == nil) then
+        return {
+            actions = {},
+            error = targetErr
+        }
+    end
+
+    local primaryIdentifier = GetPlayerPrimaryIdentifier(target)
+    if (primaryIdentifier == nil) then
+        return {
+            actions = {},
+            error = "No primary ID found for player."
+        }
+    end
+
+    local success, response = SendAPIRequest("/api/player-action-history", {
+        secret = Config.SECRET,
+        primaryIdentifier = primaryIdentifier
+    })
+
+    return {
+        actions = success and (json.decode(response) or {}) or {},
+        error = success and nil or response
+    }
+end)
+
 lib.callback.register("sw:menu:remoteAction", function(source, targetSource, actionType, reason, details, duration, ruleId)
     local target, targetErr = requireOnlinePlayer(targetSource)
     if (target == nil) then
