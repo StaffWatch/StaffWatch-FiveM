@@ -1,3 +1,7 @@
+local rulesCache = nil
+local rulesCacheTime = 0
+local RULES_CACHE_SECONDS = 5 * 60
+
 local function getStaffStatus(source)
     local primaryIdentifier = GetPlayerPrimaryIdentifier(source)
     if (primaryIdentifier == nil) then
@@ -20,6 +24,24 @@ local function getStaffStatus(source)
     end
 
     return true, response, nil
+end
+
+local function getRules()
+    if (rulesCache ~= nil and os.time() - rulesCacheTime < RULES_CACHE_SECONDS) then
+        return rulesCache, nil
+    end
+
+    local success, rawResponse = SendAPIRequest("/api/rules", {
+        secret = Config.SECRET
+    })
+
+    if (not success) then
+        return {}, rawResponse
+    end
+
+    rulesCache = json.decode(rawResponse) or {}
+    rulesCacheTime = os.time()
+    return rulesCache, nil
 end
 
 local function canUseLocalTools(source)
@@ -134,6 +156,22 @@ lib.callback.register("sw:menu:getPlayerCoords", function(source, targetSource)
     }
 end)
 
+lib.callback.register("sw:menu:getRules", function(source)
+    local canUse, accessErr = canUseLocalTools(source)
+    if (not canUse) then
+        return {
+            rules = {},
+            error = accessErr
+        }
+    end
+
+    local rules, err = getRules()
+    return {
+        rules = rules,
+        error = err
+    }
+end)
+
 lib.callback.register("sw:menu:canUseLocalTools", function(source)
     local canUse, result = canUseLocalTools(source)
     return {
@@ -205,7 +243,7 @@ lib.callback.register("sw:menu:createPortalCode", function(source)
     })
 end)
 
-lib.callback.register("sw:menu:remoteAction", function(source, targetSource, actionType, reason, details, duration)
+lib.callback.register("sw:menu:remoteAction", function(source, targetSource, actionType, reason, details, duration, ruleId)
     local target, targetErr = requireOnlinePlayer(targetSource)
     if (target == nil) then
         return false, targetErr
@@ -216,7 +254,7 @@ lib.callback.register("sw:menu:remoteAction", function(source, targetSource, act
         return false, "Unable to resolve your StaffWatch link. Try relogging."
     end
 
-    return ExecuteRemoteAction(target, actionType, reason, details, nil, staffPrimary, duration)
+    return ExecuteRemoteAction(target, actionType, reason, details, nil, staffPrimary, duration, ruleId)
 end)
 
 RegisterNetEvent("sw:menu:teleportToPlayer")

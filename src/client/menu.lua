@@ -139,6 +139,7 @@ local function buildPlayerOptions(players, excludeSelf)
         end
     end
 
+    if (#options == 1) then return nil end
     return options
 end
 
@@ -237,13 +238,64 @@ local function confirmDangerousAction(title, message)
     return result == "confirm"
 end
 
+local function shouldShowRuleSelector(actionType)
+    return actionType == "WARN" or actionType == "KICK" or actionType == "BAN"
+end
+
+local function getRuleOptions()
+    local result = lib.callback.await("sw:menu:getRules", false) or {}
+    local rules = result.rules or {}
+    if (#rules == 0) then return nil end
+
+    local options = {
+        {
+            value = "",
+            label = "No associated rule"
+        }
+    }
+
+    for _, rule in ipairs(rules) do
+        if (rule.id ~= nil) then
+            local label = rule.name
+            if (rule.ruleNumber ~= nil) then
+                label = ("%s - %s"):format(rule.ruleNumber, rule.name)
+            end
+
+            table.insert(options, {
+                value = rule.id,
+                label = label
+            })
+        end
+    end
+
+    return options
+end
+
+local function addRuleSelectField(fields, actionType)
+    if (not shouldShowRuleSelector(actionType)) then return false end
+
+    local ruleOptions = getRuleOptions()
+    if (ruleOptions == nil) then return false end
+
+    table.insert(fields, {
+        type = "select",
+        label = "Associated Rule",
+        description = "Optionally attach a StaffWatch rule to this action.",
+        options = ruleOptions,
+        default = "",
+        required = false
+    })
+    return true
+end
+
 local function runRemoteAction(target, targetLabel, actionType)
     local title = ("%s %s"):format(actionType:sub(1, 1) .. actionType:sub(2):lower(), targetLabel)
     local input = nil
     local duration = nil
+    local ruleId = nil
 
     if (actionType == "BAN") then
-        input = lib.inputDialog(title, {
+        local fields = {
             {
                 type = "input",
                 label = "Duration",
@@ -263,7 +315,10 @@ local function runRemoteAction(target, targetLabel, actionType)
                 required = false,
                 max = 2500
             }
-        })
+        }
+
+        local hasRuleSelector = addRuleSelectField(fields, actionType)
+        input = lib.inputDialog(title, fields)
 
         if (input == nil) then return end
         duration = trim(input[1])
@@ -274,11 +329,44 @@ local function runRemoteAction(target, targetLabel, actionType)
             reason = trim(input[2]),
             details = trim(input[3])
         }
+        if (hasRuleSelector) then
+            ruleId = trim(input[4])
+        end
     else
-        input = promptReason(title, actionType ~= "KICK")
+        local includeDetails = actionType ~= "KICK"
+        local fields = {
+            {
+                type = "input",
+                label = "Reason",
+                required = true,
+                max = 255
+            }
+        }
+
+        if (includeDetails) then
+            table.insert(fields, {
+                type = "textarea",
+                label = "Details",
+                required = false,
+                max = 2500
+            })
+        end
+
+        local hasRuleSelector = addRuleSelectField(fields, actionType)
+        input = lib.inputDialog(title, fields)
         if (input == nil) then return end
+
+        input = {
+            reason = trim(input[1]),
+            details = includeDetails and trim(input[2]) or nil
+        }
+
+        if (hasRuleSelector) then
+            ruleId = trim(input[includeDetails and 3 or 2])
+        end
     end
 
+    if (ruleId == "") then ruleId = nil end
     if (input.reason == nil or input.reason == "") then return end
 
     if (actionType == "KICK" or actionType == "BAN") then
@@ -293,7 +381,8 @@ local function runRemoteAction(target, targetLabel, actionType)
         actionType,
         input.reason,
         input.details,
-        duration
+        duration,
+        ruleId
     )
     showResult(success, response, "Action Executed")
 end
