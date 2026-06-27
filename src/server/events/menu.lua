@@ -243,6 +243,42 @@ lib.callback.register("sw:menu:createPortalCode", function(source)
     })
 end)
 
+lib.callback.register("sw:menu:getProfileLink", function(source, targetSource)
+    local canUse, err = canUseLocalTools(source)
+    if (not canUse) then
+        return {
+            link = nil,
+            error = err
+        }
+    end
+
+    local target, targetErr = requireOnlinePlayer(targetSource)
+    if (target == nil) then
+        return {
+            link = nil,
+            error = targetErr
+        }
+    end
+
+    local primaryIdentifier = GetPlayerPrimaryIdentifier(target)
+    if (primaryIdentifier == nil) then
+        return {
+            link = nil,
+            error = "No primary ID found for player."
+        }
+    end
+
+    local success, response = SendAPIRequest("/api/player-profile-link", {
+        secret = Config.SECRET,
+        primaryIdentifier = primaryIdentifier
+    })
+
+    return {
+        link = success and response or nil,
+        error = success and nil or response
+    }
+end)
+
 lib.callback.register("sw:menu:remoteAction", function(source, targetSource, actionType, reason, details, duration, ruleId)
     local target, targetErr = requireOnlinePlayer(targetSource)
     if (target == nil) then

@@ -659,6 +659,17 @@ local function getFreezeMenuOption(target)
     }
 end
 
+local function copyProfileLink(target)
+    local result = lib.callback.await("sw:menu:getProfileLink", false, target) or {}
+    if (result.link == nil or result.link == "") then
+        notify("StaffWatch", result.error or "Unable to load profile link.", "error")
+        return
+    end
+
+    lib.setClipboard(result.link)
+    notify("StaffWatch", "Profile link copied.", "success")
+end
+
 local function openPlayerActions(player)
     local target = player.id
     local targetLabel = player.label
@@ -679,7 +690,8 @@ local function openPlayerActions(player)
         {label = "Teleport To Player", description = "Move yourself to this player's current location", icon = "location-dot", iconColor = ICON_COLORS.cyan, args = {action = "teleport"}},
         {label = "Summon Player", description = "Bring this player to your current location", icon = "user-plus", iconColor = ICON_COLORS.cyan, args = {action = "summon"}},
         getSpectateMenuOption(target),
-        getFreezeMenuOption(target)
+        getFreezeMenuOption(target),
+        {label = "Copy Profile Link", description = "Copy this player's StaffWatch dashboard profile link", icon = "copy", iconColor = ICON_COLORS.brand, args = {action = "copyProfile"}}
     }, function(args)
         if (args.action == "details") then
             return
@@ -697,6 +709,8 @@ local function openPlayerActions(player)
             TriggerServerEvent("sw:menu:teleportToPlayer", target)
         elseif (args.action == "summon") then
             TriggerServerEvent("sw:menu:summonPlayer", target)
+        elseif (args.action == "copyProfile") then
+            copyProfileLink(target)
         end
     end, function(selected, checked, args)
         if (args.action == "spectate") then
