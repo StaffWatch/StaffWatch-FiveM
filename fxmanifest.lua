@@ -28,6 +28,7 @@ server_scripts {
     "/src/server/scheduled/recurring_update.lua",
     "/src/server/scheduled/upload_logs.lua",
     "/src/server/scheduled/live_server.lua",
+    "/src/server/scheduled/live_screen.lua",
     "/src/server/events/remote_action.lua",
     "/src/server/events/menu.lua",
 }
@@ -40,9 +41,15 @@ client_scripts {
     "/src/client/freeze.lua",
     "/src/client/notify.lua",
     "/src/client/live_client.lua",
+    "/src/client/live_screen.lua",
     "/src/client/menu.lua",
 }
 
+ui_page "src/html/live_screen.html"
+
 files {
-    '/src/resources/announce_logo.png'
+    '/src/resources/announce_logo.png',
+    '/src/html/live_screen.html',
+    '/src/html/live_screen.js',
+    '/src/html/three.module.js'
 }
