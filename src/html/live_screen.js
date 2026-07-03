@@ -14,10 +14,10 @@ import {
 } from "./three.module.js"
 
 const DEFAULT_QUALITY = {
-  width: 640,
-  height: 360,
-  fps: 15,
-  bitrate: 600000
+  width: 1920,
+  height: 1080,
+  fps: 30,
+  bitrate: 4500000
 }
 
 let activeSession = null
@@ -55,7 +55,7 @@ class GameViewCapture {
       vertexShader: `
         varying vec2 vUv;
         void main() {
-          vUv = vec2(uv.x, 1.0 - uv.y);
+          vUv = uv;
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
       `,
@@ -147,6 +147,9 @@ async function startLiveScreen(payload) {
       capture,
       peer,
       socket: null,
+      heartbeat: null,
+      disconnectTimer: null,
+      statusAckResolvers: {},
       offerStarted: false,
       closed: false,
       quality: { ...DEFAULT_QUALITY, ...(payload.quality || {}) }
@@ -169,8 +172,11 @@ async function startLiveScreen(payload) {
 
     peer.onconnectionstatechange = () => {
       if (peer.connectionState === "connected") {
+        clearDisconnectTimer()
         reportStatus("LIVE")
-      } else if (peer.connectionState === "failed" || peer.connectionState === "disconnected") {
+      } else if (peer.connectionState === "disconnected") {
+        scheduleDisconnectFailure()
+      } else if (peer.connectionState === "failed") {
         failLiveScreen("Live screen WebRTC connection failed")
       }
     }
@@ -185,6 +191,9 @@ async function startLiveScreen(payload) {
 
     socket.onopen = () => {
       sendSignal({ type: "ready" })
+      activeSession.heartbeat = setInterval(() => {
+        sendSignal({ type: "ping" })
+      }, 25000)
       reportStatus("PUBLISHER_READY")
     }
     socket.onerror = () => failLiveScreen("Live screen signaling failed")
@@ -196,7 +205,11 @@ async function startLiveScreen(payload) {
     socket.onmessage = async event => {
       try {
         const message = JSON.parse(event.data)
-        if (message.type === "ready") {
+        if (message.type === "pong") {
+          return
+        } else if (message.type === "publisher_status_ack") {
+          resolveStatusAck(message.id)
+        } else if (message.type === "ready") {
           await sendOffer()
         } else if (message.type === "answer" && message.sdp) {
           await peer.setRemoteDescription(message.sdp)
@@ -244,6 +257,12 @@ async function stopLiveScreen(sessionId, report, message) {
   const session = activeSession
   activeSession = null
   session.closed = true
+  if (session.heartbeat) {
+    clearInterval(session.heartbeat)
+  }
+  if (session.disconnectTimer) {
+    clearTimeout(session.disconnectTimer)
+  }
   session.socket?.close()
   session.peer?.close()
   session.capture?.stop()
@@ -253,13 +272,69 @@ async function stopLiveScreen(sessionId, report, message) {
   }
 }
 
-function failLiveScreen(message) {
+async function failLiveScreen(message) {
   if (!activeSession) {
     return
   }
   const sessionId = activeSession.sessionId
-  reportStatusForSession(sessionId, "FAILED", message)
-  stopLiveScreen(sessionId, false)
+  await reportFailureOverSocket(message)
+  await reportStatusForSession(sessionId, "FAILED", message)
+  await stopLiveScreen(sessionId, false)
+}
+
+function reportFailureOverSocket(message) {
+  if (activeSession?.socket?.readyState !== WebSocket.OPEN) {
+    return Promise.resolve()
+  }
+
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  return new Promise(resolve => {
+    const timeout = setTimeout(() => {
+      delete activeSession?.statusAckResolvers[id]
+      resolve()
+    }, 1000)
+    activeSession.statusAckResolvers[id] = () => {
+      clearTimeout(timeout)
+      resolve()
+    }
+    sendSignal({
+      type: "publisher_status",
+      id,
+      status: "FAILED",
+      message
+    })
+  })
+}
+
+function resolveStatusAck(id) {
+  if (!id || !activeSession?.statusAckResolvers[id]) {
+    return
+  }
+  activeSession.statusAckResolvers[id]()
+  delete activeSession.statusAckResolvers[id]
+}
+
+function scheduleDisconnectFailure() {
+  if (!activeSession || activeSession.disconnectTimer) {
+    return
+  }
+  activeSession.disconnectTimer = setTimeout(() => {
+    if (!activeSession) {
+      return
+    }
+    const state = activeSession.peer?.connectionState
+    if (state === "disconnected" || state === "failed") {
+      failLiveScreen(`Live screen WebRTC connection ${state}`)
+    }
+  }, 15000)
+}
+
+function clearDisconnectTimer() {
+  if (!activeSession?.disconnectTimer) {
+    return
+  }
+  clearTimeout(activeSession.disconnectTimer)
+  activeSession.disconnectTimer = null
 }
 
 function sendSignal(message) {
@@ -295,7 +370,7 @@ function reportStatus(status, message) {
 
 function reportStatusForSession(sessionId, status, message) {
   const resourceName = typeof GetParentResourceName === "function" ? GetParentResourceName() : "StaffWatch-FiveM"
-  fetch(`https://${resourceName}/liveScreenStatus`, {
+  return fetch(`https://${resourceName}/liveScreenStatus`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json; charset=UTF-8"
