@@ -1,5 +1,15 @@
 local commandSuggestions = {
     {
+        name = "/staffwatch",
+        help = "Open the StaffWatch menu",
+        params = {}
+    },
+    {
+        name = "/swmenu",
+        help = "Open the StaffWatch menu",
+        params = {}
+    },
+    {
         name = "/link",
         help = "Generate a code to link your in-game player profile to StaffWatch",
         params = {}
